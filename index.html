@@ -6,25 +6,25 @@
 html,body{height:100%;margin:0}
 body{background:var(--bg);color:var(--fg);font-family:"Tajawal",system-ui,-apple-system,sans-serif;font-size:14px;overflow:hidden}
 :focus-visible{outline:2px solid var(--accent);outline-offset:2px}
-button{font:inherit;color:var(--fg);background:var(--panel2);border:1px solid var(--line);border-radius:10px;min-height:36px;min-width:36px;padding:0 10px;cursor:pointer;flex:0 0 auto}
+button,input{font:inherit}
+button{color:var(--fg);background:var(--panel2);border:1px solid var(--line);border-radius:10px;min-height:38px;min-width:38px;padding:0 10px;cursor:pointer;flex:0 0 auto}
 button:disabled{opacity:.35}
 button.on,button.primary{background:var(--accent);color:var(--accent-ink);border-color:var(--accent)}
 button.primary{font-weight:700}
-.app{height:100%;box-sizing:border-box;display:flex;flex-direction:column;gap:10px;padding-top:8px;padding-bottom:8px;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));min-width:0}
+svg.i{width:22px;height:22px;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
+
+.app{height:100%;box-sizing:border-box;display:flex;flex-direction:column;gap:8px;padding-top:8px;padding-bottom:8px;padding-left:max(12px,env(safe-area-inset-left,0px));padding-right:max(12px,env(safe-area-inset-right,0px));min-width:0;max-width:1100px;margin:0 auto}
 .top{display:flex;align-items:center;gap:6px}
 .brand{font-weight:700;font-size:16px;flex:1;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.stage{flex:1 1 auto;min-height:0;display:flex;flex-direction:column;gap:6px}
-.info{display:flex;justify-content:space-between;align-items:center;color:var(--muted);font-size:12px;font-variant-numeric:tabular-nums;gap:8px}
-.info input{width:80px;accent-color:var(--accent);vertical-align:middle}
-.canvas-wrap{width:min(100%,520px,44vh);aspect-ratio:1;align-self:center;background:#fff;border-radius:12px;overflow:hidden;position:relative;box-shadow:0 0 0 1px var(--line)}
-canvas{display:block;width:100%;height:100%;touch-action:none}
-.tools{display:flex;gap:6px;align-items:center;overflow-x:auto;scrollbar-width:none;padding:2px 0}
-.tools::-webkit-scrollbar,.tl-ctrl::-webkit-scrollbar{display:none}
-input[type=color]{width:36px;height:36px;border:1px solid var(--line);border-radius:10px;background:none;padding:2px;flex:0 0 auto}
-input[type=range]{accent-color:var(--accent);width:90px;flex:0 0 auto}
-.timeline{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:8px;display:flex;flex-direction:column;gap:8px}
-.tl-ctrl{display:flex;gap:6px;overflow-x:auto;scrollbar-width:none}
-.tl-scroll{overflow:auto;max-height:24vh;direction:ltr;border-radius:8px}
+
+.main{flex:1 1 auto;min-height:0;display:flex;flex-direction:column;gap:8px}
+.stage{flex:1 1 auto;min-height:0;display:flex;flex-direction:column;gap:4px}
+.info{color:var(--muted);font-size:12px;font-variant-numeric:tabular-nums;padding:0 4px}
+.canvas-box{position:relative;flex:1 1 auto;min-height:0;width:100%}
+canvas{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);background:#fff;border-radius:12px;box-shadow:0 0 0 1px var(--line);touch-action:none;display:block}
+
+.timeline{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:6px;display:flex;flex-direction:column;flex:0 0 auto}
+.tl-scroll{overflow:auto;max-height:22vh;direction:ltr;border-radius:8px}
 .row{display:flex;width:max-content}
 .lab{position:sticky;left:0;z-index:2;background:var(--panel);width:120px;flex:0 0 120px;display:flex;align-items:center;gap:6px;padding:4px 6px;box-sizing:border-box;border-bottom:1px solid var(--line);direction:rtl;font-size:13px;min-height:36px}
 .lab.sel{color:var(--accent)}
@@ -36,57 +36,99 @@ input[type=range]{accent-color:var(--accent);width:90px;flex:0 0 auto}
 .cell.cur{box-shadow:inset 0 0 0 2px var(--accent)}
 .ruler .cell{height:26px;font-size:11px;color:var(--muted)}
 .ruler .cell.col{background:var(--accent);color:var(--accent-ink)}
+
+.sheet{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:8px}
+.panel{display:flex;flex-wrap:wrap;gap:6px;align-items:center}
+.panel label{display:flex;align-items:center;gap:8px;color:var(--muted)}
+.panel input[type=color]{width:38px;height:38px;border:1px solid var(--line);border-radius:10px;background:none;padding:2px}
+.panel input[type=range]{accent-color:var(--accent);width:140px}
+.hint{color:var(--muted);font-size:12px;width:100%}
+
+.dock{display:flex;gap:4px;background:var(--panel);border:1px solid var(--line);border-radius:16px;padding:6px}
+.dock button{flex:1 1 0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;min-height:54px;background:none;border:none;color:var(--muted);font-size:12px;padding:4px 0}
+.dock button.on{background:none;color:var(--accent);border:none}
+
+@media (min-width:700px) and (orientation:landscape){
+  .main{flex-direction:row}
+  .stage{flex:1.3}
+  .timeline{flex:1;min-width:0}
+  .tl-scroll{max-height:none;flex:1;min-height:0}
+}
 .modal{position:fixed;inset:0;background:rgba(0,0,0,.75);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:12px;padding:16px;z-index:50}
 .modal[hidden]{display:none}
-.modal img{max-width:100%;max-height:70vh;background:#fff;border-radius:8px}
-.modal p{color:var(--muted);margin:0;text-align:center}
+.modal img{max-width:100%;max-height:65vh;background:#fff;border-radius:8px}
+.modal p{color:var(--muted);margin:0;text-align:center;font-size:13px}
 </style>
 
 <div class="app" dir="rtl">
   <header class="top">
     <div class="brand">Frame Studio</div>
-    <button id="undo">تراجع</button>
-    <button id="redo">إعادة</button>
-    <button id="strip">معاينة</button>
+    <button id="undo" aria-label="تراجع">تراجع</button>
+    <button id="redo" aria-label="إعادة">إعادة</button>
     <button id="play" class="primary">تشغيل</button>
   </header>
 
-  <section class="stage">
-    <div class="info">
-      <span id="fi"></span>
-      <label>سرعة <input id="fps" type="range" min="1" max="30"></label>
-    </div>
-    <div class="canvas-wrap"><canvas id="stage"></canvas></div>
-    <nav class="tools">
+  <main class="main">
+    <section class="stage">
+      <div class="info" id="fi"></div>
+      <div class="canvas-box" id="box"><canvas id="stage"></canvas></div>
+    </section>
+
+    <section class="timeline">
+      <div class="tl-scroll"><div id="tl"></div></div>
+    </section>
+  </main>
+
+  <section class="sheet" id="sheet" hidden>
+    <div class="panel" data-panel="draw" hidden>
       <button data-tool="select">تحديد</button>
       <button data-tool="brush">فرشاة</button>
       <button data-tool="erase">ممحاة</button>
-      <button data-tool="line">خط</button>
-      <button data-tool="rect">مستطيل</button>
-      <button data-tool="ellipse">دائرة</button>
       <input type="color" id="color" aria-label="اللون">
       <input type="range" id="size" min="1" max="60" aria-label="الحجم">
       <button id="delsel" data-act="delSel" disabled>حذف المحدد</button>
-    </nav>
-  </section>
-
-  <section class="timeline">
-    <div class="tl-ctrl">
+    </div>
+    <div class="panel" data-panel="shapes" hidden>
+      <button data-tool="line">خط</button>
+      <button data-tool="rect">مستطيل</button>
+      <button data-tool="ellipse">دائرة</button>
+    </div>
+    <div class="panel" data-panel="layers" hidden>
       <button data-act="addLayer">+ طبقة</button>
-      <button data-act="delLayer">حذف طبقة</button>
+      <button data-act="delLayer">حذف الطبقة</button>
+      <span class="hint">اضغط على ● بجانب اسم الطبقة لإخفائها أو إظهارها</span>
+    </div>
+    <div class="panel" data-panel="frames" hidden>
       <button data-act="addFrame">+ إطار</button>
-      <button data-act="dupFrame">نسخ إطار</button>
+      <button data-act="dupFrame">نسخ الإطار</button>
       <button data-act="clearFrame">مسح الإطار</button>
-      <button data-act="delFrame">حذف إطار</button>
+      <button data-act="delFrame">حذف الإطار</button>
       <button id="onion" data-act="toggleOnion">قشرة الإطار السابق</button>
     </div>
-    <div class="tl-scroll"><div id="tl"></div></div>
+    <div class="panel" data-panel="motion" hidden>
+      <label>سرعة التشغيل <input id="fps" type="range" min="1" max="30"></label>
+      <span class="hint">محرر منحنيات الحركة بين الإطارات قادم في الخطوة التالية</span>
+    </div>
+    <div class="panel" data-panel="export" hidden>
+      <button data-exp="frame">حفظ الإطار PNG</button>
+      <button data-exp="strip">حفظ الشريط PNG</button>
+      <button data-exp="preview">معاينة الشريط</button>
+    </div>
   </section>
+
+  <nav class="dock">
+    <button data-sheet="draw" aria-label="رسم"><svg class="i" viewBox="0 0 24 24"><path d="M4 20l4-1 11-11-3-3L5 16z"/></svg><span>رسم</span></button>
+    <button data-sheet="shapes" aria-label="أشكال"><svg class="i" viewBox="0 0 24 24"><rect x="3" y="5" width="11" height="11" rx="2"/><circle cx="16" cy="15" r="5"/></svg><span>أشكال</span></button>
+    <button data-sheet="layers" aria-label="طبقات"><svg class="i" viewBox="0 0 24 24"><path d="M12 3l9 5-9 5-9-5z"/><path d="M3 13l9 5 9-5"/></svg><span>طبقات</span></button>
+    <button data-sheet="frames" aria-label="إطارات"><svg class="i" viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="16" rx="2"/><path d="M3 10h18M9 4v16"/></svg><span>إطارات</span></button>
+    <button data-sheet="motion" aria-label="حركة"><svg class="i" viewBox="0 0 24 24"><path d="M3 20c6 0 4-16 18-16"/></svg><span>حركة</span></button>
+    <button data-sheet="export" aria-label="تصدير"><svg class="i" viewBox="0 0 24 24"><path d="M12 3v12M7 10l5 5 5-5M4 19h16"/></svg><span>تصدير</span></button>
+  </nav>
 </div>
 
 <div class="modal" id="modal" hidden>
   <img id="shot" alt="شريط الإطارات">
-  <p>اضغط مطولاً على الصورة لحفظها في معرض هاتفك</p>
+  <p>إن لم يبدأ التنزيل، اضغط مطولاً على الصورة لحفظها في معرض هاتفك</p>
   <button id="close" class="primary">إغلاق</button>
 </div>
 
@@ -119,9 +161,20 @@ cv.width = tmp.width = S.w;
 cv.height = tmp.height = S.h;
 const tl = $('#tl');
 
-let selIdx = -1, drag = null, playing = false, timer = null;
+let selIdx = -1, drag = null, playing = false, timer = null, sheetOpen = null;
 let undoS = [], redoS = [], saveT = null;
 const cell = () => S.layers[S.layer].frames[S.cur];
+
+/* ---------- responsive canvas: fit the drawing box at any size ---------- */
+const box = $('#box');
+function fit() {
+  const r = box.getBoundingClientRect();
+  const s = Math.max(0, Math.floor(Math.min(r.width, r.height)));
+  cv.style.width = s + 'px';
+  cv.style.height = s + 'px';
+}
+new ResizeObserver(fit).observe(box);
+window.addEventListener('resize', fit);
 
 /* ---------- drawing ---------- */
 function mid(a, b) { return { x: (a.x + b.x) / 2, y: (a.y + b.y) / 2 }; }
@@ -360,7 +413,7 @@ function buildTl() {
   h += '</div>';
   for (let l = S.layers.length - 1; l >= 0; l--) {
     const L = S.layers[l];
-    h += `<div class="row"><div class="lab${l === S.layer ? ' sel' : ''}" data-l="${l}"><button class="eye" data-eye="${l}">${L.visible ? '●' : '○'}</button><span class="name">${esc(L.name)}</span></div>`;
+    h += `<div class="row"><div class="lab${l === S.layer ? ' sel' : ''}" data-l="${l}"><button class="eye" data-eye="${l}" aria-label="إظهار أو إخفاء">${L.visible ? '●' : '○'}</button><span class="name">${esc(L.name)}</span></div>`;
     for (let f = 0; f < n; f++) {
       const cls = ['cell'];
       if (f === S.cur) cls.push('col');
@@ -419,8 +472,14 @@ function stop() {
 }
 function togglePlay() { playing ? stop() : start(); }
 
-/* ---------- preview strip ---------- */
-function showStrip() {
+/* ---------- export ---------- */
+function frameURL(f) {
+  const full = document.createElement('canvas');
+  full.width = S.w; full.height = S.h;
+  renderFrame(full.getContext('2d'), f, { onion: false });
+  return full.toDataURL('image/png');
+}
+function stripURL() {
   const n = Math.min(S.frameCount, 60);
   const cols = Math.min(n, 6), rows = Math.ceil(n / cols), cs = 180;
   const out = document.createElement('canvas');
@@ -435,15 +494,40 @@ function showStrip() {
     renderFrame(fc, f, { onion: false });
     o.drawImage(full, (f % cols) * cs, Math.floor(f / cols) * cs, cs, cs);
   }
-  $('#shot').src = out.toDataURL('image/png');
-  $('#modal').hidden = false;
+  return out.toDataURL('image/png');
 }
+function saveImage(url, name) {
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = name;
+  document.body.appendChild(a);
+  a.click();
+  a.remove();
+}
+document.querySelectorAll('[data-exp]').forEach(b => b.addEventListener('click', () => {
+  const kind = b.dataset.exp;
+  if (kind === 'frame') saveImage(frameURL(S.cur), 'frame-' + (S.cur + 1) + '.png');
+  else if (kind === 'strip') saveImage(stripURL(), 'strip.png');
+  else if (kind === 'preview') { $('#shot').src = stripURL(); $('#modal').hidden = false; }
+}));
 
 /* ---------- save ---------- */
 function scheduleSave() {
   clearTimeout(saveT);
   saveT = setTimeout(() => { try { localStorage.setItem(KEY, JSON.stringify(S)); } catch (e) {} }, 400);
 }
+
+/* ---------- panels (icon dock) ---------- */
+function setSheet(key) {
+  sheetOpen = key;
+  document.querySelectorAll('[data-panel]').forEach(p => { p.hidden = p.dataset.panel !== key; });
+  $('#sheet').hidden = !key;
+  document.querySelectorAll('[data-sheet]').forEach(b => b.classList.toggle('on', b.dataset.sheet === key));
+  fit();
+}
+document.querySelectorAll('[data-sheet]').forEach(b => b.addEventListener('click', () => {
+  setSheet(sheetOpen === b.dataset.sheet ? null : b.dataset.sheet);
+}));
 
 /* ---------- UI sync ---------- */
 function updateTools() {
@@ -454,7 +538,7 @@ function updateTools() {
   $('#onion').classList.toggle('on', S.onion);
 }
 function updateInfo() {
-  $('#fi').textContent = `إطار ${S.cur + 1}/${S.frameCount} · ${S.layers[S.layer].name}`;
+  $('#fi').textContent = `إطار ${S.cur + 1} من ${S.frameCount} · ${S.layers[S.layer].name}`;
   $('#play').textContent = playing ? 'إيقاف' : 'تشغيل';
   $('#fps').value = S.fps;
   $('#undo').disabled = !undoS.length || playing;
@@ -483,8 +567,8 @@ $('#fps').addEventListener('input', e => {
 $('#undo').addEventListener('click', undo);
 $('#redo').addEventListener('click', redo);
 $('#play').addEventListener('click', togglePlay);
-$('#strip').addEventListener('click', showStrip);
 $('#close').addEventListener('click', () => { $('#modal').hidden = true; });
 
+fit();
 refresh();
 </script>
