@@ -1,0 +1,52 @@
+name: Build APK
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Prepare web files and Capacitor config
+        run: |
+          mkdir -p app/www
+          cp index.html manifest.json sw.js icon-512.png app/www/
+          cat > app/capacitor.config.json <<'EOF2'
+          {"appId":"com.yassoro.framestudio","appName":"Frame Studio","webDir":"www"}
+          EOF2
+
+      - name: Install Capacitor
+        working-directory: app
+        run: |
+          npm init -y
+          npm install @capacitor/core@6 @capacitor/cli@6 @capacitor/android@6
+
+      - name: Create Android project
+        working-directory: app
+        run: |
+          npx cap add android
+          npx cap sync android
+
+      - name: Build debug APK
+        working-directory: app/android
+        run: |
+          chmod +x gradlew
+          ./gradlew assembleDebug --no-daemon
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: frame-studio-apk
+          path: app/android/app/build/outputs/apk/debug/app-debug.apk
