@@ -1,0 +1,490 @@
+<title>Frame Studio</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700&display=swap">
+<style>
+:root{--bg:#0d0d11;--panel:#16161c;--panel2:#20202a;--line:#2c2c38;--fg:#eeeef4;--muted:#8d8da0;--accent:#ff7a3d;--accent-ink:#1d0c02;color-scheme:dark}
+html,body{height:100%;margin:0}
+body{background:var(--bg);color:var(--fg);font-family:"Tajawal",system-ui,-apple-system,sans-serif;font-size:14px;overflow:hidden}
+:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+button{font:inherit;color:var(--fg);background:var(--panel2);border:1px solid var(--line);border-radius:10px;min-height:36px;min-width:36px;padding:0 10px;cursor:pointer;flex:0 0 auto}
+button:disabled{opacity:.35}
+button.on,button.primary{background:var(--accent);color:var(--accent-ink);border-color:var(--accent)}
+button.primary{font-weight:700}
+.app{height:100%;box-sizing:border-box;display:flex;flex-direction:column;gap:10px;padding-top:8px;padding-bottom:8px;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));min-width:0}
+.top{display:flex;align-items:center;gap:6px}
+.brand{font-weight:700;font-size:16px;flex:1;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.stage{flex:1 1 auto;min-height:0;display:flex;flex-direction:column;gap:6px}
+.info{display:flex;justify-content:space-between;align-items:center;color:var(--muted);font-size:12px;font-variant-numeric:tabular-nums;gap:8px}
+.info input{width:80px;accent-color:var(--accent);vertical-align:middle}
+.canvas-wrap{width:min(100%,520px,44vh);aspect-ratio:1;align-self:center;background:#fff;border-radius:12px;overflow:hidden;position:relative;box-shadow:0 0 0 1px var(--line)}
+canvas{display:block;width:100%;height:100%;touch-action:none}
+.tools{display:flex;gap:6px;align-items:center;overflow-x:auto;scrollbar-width:none;padding:2px 0}
+.tools::-webkit-scrollbar,.tl-ctrl::-webkit-scrollbar{display:none}
+input[type=color]{width:36px;height:36px;border:1px solid var(--line);border-radius:10px;background:none;padding:2px;flex:0 0 auto}
+input[type=range]{accent-color:var(--accent);width:90px;flex:0 0 auto}
+.timeline{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:8px;display:flex;flex-direction:column;gap:8px}
+.tl-ctrl{display:flex;gap:6px;overflow-x:auto;scrollbar-width:none}
+.tl-scroll{overflow:auto;max-height:24vh;direction:ltr;border-radius:8px}
+.row{display:flex;width:max-content}
+.lab{position:sticky;left:0;z-index:2;background:var(--panel);width:120px;flex:0 0 120px;display:flex;align-items:center;gap:6px;padding:4px 6px;box-sizing:border-box;border-bottom:1px solid var(--line);direction:rtl;font-size:13px;min-height:36px}
+.lab.sel{color:var(--accent)}
+.lab .name{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.eye{min-width:26px;min-height:26px;padding:0;border:none;background:none;font-size:14px}
+.cell{width:30px;flex:0 0 30px;height:36px;box-sizing:border-box;border-right:1px solid var(--line);border-bottom:1px solid var(--line);display:flex;align-items:center;justify-content:center;cursor:pointer;background:var(--panel)}
+.cell.col{background:var(--panel2)}
+.cell.key::after{content:"";width:7px;height:7px;border-radius:50%;background:var(--muted)}
+.cell.cur{box-shadow:inset 0 0 0 2px var(--accent)}
+.ruler .cell{height:26px;font-size:11px;color:var(--muted)}
+.ruler .cell.col{background:var(--accent);color:var(--accent-ink)}
+.modal{position:fixed;inset:0;background:rgba(0,0,0,.75);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:12px;padding:16px;z-index:50}
+.modal[hidden]{display:none}
+.modal img{max-width:100%;max-height:70vh;background:#fff;border-radius:8px}
+.modal p{color:var(--muted);margin:0;text-align:center}
+</style>
+
+<div class="app" dir="rtl">
+  <header class="top">
+    <div class="brand">Frame Studio</div>
+    <button id="undo">تراجع</button>
+    <button id="redo">إعادة</button>
+    <button id="strip">معاينة</button>
+    <button id="play" class="primary">تشغيل</button>
+  </header>
+
+  <section class="stage">
+    <div class="info">
+      <span id="fi"></span>
+      <label>سرعة <input id="fps" type="range" min="1" max="30"></label>
+    </div>
+    <div class="canvas-wrap"><canvas id="stage"></canvas></div>
+    <nav class="tools">
+      <button data-tool="select">تحديد</button>
+      <button data-tool="brush">فرشاة</button>
+      <button data-tool="erase">ممحاة</button>
+      <button data-tool="line">خط</button>
+      <button data-tool="rect">مستطيل</button>
+      <button data-tool="ellipse">دائرة</button>
+      <input type="color" id="color" aria-label="اللون">
+      <input type="range" id="size" min="1" max="60" aria-label="الحجم">
+      <button id="delsel" data-act="delSel" disabled>حذف المحدد</button>
+    </nav>
+  </section>
+
+  <section class="timeline">
+    <div class="tl-ctrl">
+      <button data-act="addLayer">+ طبقة</button>
+      <button data-act="delLayer">حذف طبقة</button>
+      <button data-act="addFrame">+ إطار</button>
+      <button data-act="dupFrame">نسخ إطار</button>
+      <button data-act="clearFrame">مسح الإطار</button>
+      <button data-act="delFrame">حذف إطار</button>
+      <button id="onion" data-act="toggleOnion">قشرة الإطار السابق</button>
+    </div>
+    <div class="tl-scroll"><div id="tl"></div></div>
+  </section>
+</div>
+
+<div class="modal" id="modal" hidden>
+  <img id="shot" alt="شريط الإطارات">
+  <p>اضغط مطولاً على الصورة لحفظها في معرض هاتفك</p>
+  <button id="close" class="primary">إغلاق</button>
+</div>
+
+<script>
+const KEY = 'frame-studio-v1';
+const $ = s => document.querySelector(s);
+const clamp = (v, a, b) => Math.max(a, Math.min(b, v));
+const esc = s => String(s).replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+
+function mkLayer(o, name) {
+  return { name, visible: true, frames: Array.from({ length: o.frameCount }, () => []) };
+}
+function makeDefault() {
+  const o = { w: 540, h: 540, fps: 12, frameCount: 12, cur: 0, layer: 0, tool: 'brush', color: '#17171f', size: 6, onion: true, layers: [] };
+  o.layers.push(mkLayer(o, 'طبقة 1'));
+  return o;
+}
+function load() {
+  try {
+    const o = JSON.parse(localStorage.getItem(KEY));
+    if (o && o.layers && o.layers.length && o.frameCount > 0) return o;
+  } catch (e) {}
+  return null;
+}
+
+let S = load() || makeDefault();
+const cv = $('#stage'), ctx = cv.getContext('2d');
+const tmp = document.createElement('canvas'), tctx = tmp.getContext('2d');
+cv.width = tmp.width = S.w;
+cv.height = tmp.height = S.h;
+const tl = $('#tl');
+
+let selIdx = -1, drag = null, playing = false, timer = null;
+let undoS = [], redoS = [], saveT = null;
+const cell = () => S.layers[S.layer].frames[S.cur];
+
+/* ---------- drawing ---------- */
+function mid(a, b) { return { x: (a.x + b.x) / 2, y: (a.y + b.y) / 2 }; }
+
+function drawShape(c, s) {
+  c.save();
+  c.strokeStyle = s.color;
+  c.fillStyle = s.color;
+  c.lineCap = 'round';
+  c.lineJoin = 'round';
+  c.lineWidth = s.size;
+  if (s.pts) {
+    if (s.type === 'erase') c.globalCompositeOperation = 'destination-out';
+    const p = s.pts;
+    c.beginPath();
+    if (p.length === 1) {
+      c.arc(p[0].x, p[0].y, s.size / 2, 0, Math.PI * 2);
+      c.fill();
+    } else {
+      c.moveTo(p[0].x, p[0].y);
+      for (let i = 1; i < p.length - 1; i++) {
+        const m = mid(p[i], p[i + 1]);
+        c.quadraticCurveTo(p[i].x, p[i].y, m.x, m.y);
+      }
+      c.lineTo(p[p.length - 1].x, p[p.length - 1].y);
+      c.stroke();
+    }
+  } else {
+    c.beginPath();
+    if (s.type === 'line') {
+      c.moveTo(s.x1, s.y1);
+      c.lineTo(s.x2, s.y2);
+    } else if (s.type === 'rect') {
+      const b = bbox(s);
+      c.rect(b.x, b.y, b.w, b.h);
+    } else if (s.type === 'ellipse') {
+      const b = bbox(s);
+      c.ellipse(b.x + b.w / 2, b.y + b.h / 2, b.w / 2, b.h / 2, 0, 0, Math.PI * 2);
+    }
+    c.stroke();
+  }
+  c.restore();
+}
+
+// Draw one layer's shapes onto a scratch canvas, then composite with alpha.
+function compose(shapes, alpha, target) {
+  tctx.clearRect(0, 0, S.w, S.h);
+  for (const s of shapes) drawShape(tctx, s);
+  target.save();
+  target.globalAlpha = alpha;
+  target.drawImage(tmp, 0, 0);
+  target.restore();
+}
+
+function renderFrame(c, f, opt) {
+  c.save();
+  c.fillStyle = '#ffffff';
+  c.fillRect(0, 0, S.w, S.h);
+  c.restore();
+  if (opt.onion && f > 0) S.layers.forEach(L => { if (L.visible) compose(L.frames[f - 1], 0.22, c); });
+  S.layers.forEach(L => { if (L.visible) compose(L.frames[f], 1, c); });
+}
+
+function render() {
+  renderFrame(ctx, S.cur, { onion: S.onion && !playing });
+  const L = cell();
+  if (selIdx >= 0 && selIdx < L.length) {
+    const b = bbox(L[selIdx]);
+    ctx.save();
+    ctx.setLineDash([8, 6]);
+    ctx.lineWidth = 2;
+    ctx.strokeStyle = '#ff7a3d';
+    ctx.strokeRect(b.x - 5, b.y - 5, b.w + 10, b.h + 10);
+    ctx.restore();
+  }
+}
+
+/* ---------- geometry / hit testing ---------- */
+function bbox(s) {
+  let xs, ys;
+  if (s.pts) { xs = s.pts.map(p => p.x); ys = s.pts.map(p => p.y); }
+  else { xs = [s.x1, s.x2]; ys = [s.y1, s.y2]; }
+  const x0 = Math.min(...xs), x1 = Math.max(...xs), y0 = Math.min(...ys), y1 = Math.max(...ys);
+  return { x: x0, y: y0, w: x1 - x0, h: y1 - y0 };
+}
+function distSeg(px, py, ax, ay, bx, by) {
+  const dx = bx - ax, dy = by - ay, L = dx * dx + dy * dy;
+  const t = L ? clamp(((px - ax) * dx + (py - ay) * dy) / L, 0, 1) : 0;
+  return Math.hypot(ax + t * dx - px, ay + t * dy - py);
+}
+function hitShape(s, x, y) {
+  if (s.type === 'erase') return false;
+  const tol = Math.max(10, s.size / 2 + 8);
+  if (s.pts) {
+    const p = s.pts;
+    if (p.length === 1) return Math.hypot(p[0].x - x, p[0].y - y) < tol;
+    for (let i = 1; i < p.length; i++) if (distSeg(x, y, p[i - 1].x, p[i - 1].y, p[i].x, p[i].y) < tol) return true;
+    return false;
+  }
+  if (s.type === 'line') return distSeg(x, y, s.x1, s.y1, s.x2, s.y2) < tol;
+  const b = bbox(s);
+  return x > b.x - tol && x < b.x + b.w + tol && y > b.y - tol && y < b.y + b.h + tol;
+}
+function pos(e) {
+  const r = cv.getBoundingClientRect();
+  return { x: Math.round((e.clientX - r.left) * S.w / r.width * 10) / 10, y: Math.round((e.clientY - r.top) * S.h / r.height * 10) / 10 };
+}
+
+/* ---------- pointer input ---------- */
+cv.addEventListener('pointerdown', e => {
+  if (playing) return;
+  cv.setPointerCapture(e.pointerId);
+  const p = pos(e), L = cell();
+  if (S.tool === 'select') {
+    let idx = -1;
+    for (let i = L.length - 1; i >= 0; i--) if (hitShape(L[i], p.x, p.y)) { idx = i; break; }
+    selIdx = idx;
+    drag = idx >= 0 ? { mode: 'move', last: p, pushed: false } : null;
+    render();
+    updateTools();
+    return;
+  }
+  pushHistory();
+  let s;
+  if (S.tool === 'brush' || S.tool === 'erase') {
+    s = { type: S.tool === 'brush' ? 'stroke' : 'erase', pts: [p], color: S.color, size: S.size };
+  } else {
+    s = { type: S.tool, x1: p.x, y1: p.y, x2: p.x, y2: p.y, color: S.color, size: S.size };
+  }
+  L.push(s);
+  selIdx = -1;
+  drag = { mode: 'draw', shape: s };
+  render();
+});
+
+cv.addEventListener('pointermove', e => {
+  if (!drag) return;
+  const p = pos(e);
+  if (drag.mode === 'draw') {
+    const s = drag.shape;
+    if (s.pts) s.pts.push(p); else { s.x2 = p.x; s.y2 = p.y; }
+  } else {
+    if (!drag.pushed) { pushHistory(); drag.pushed = true; }
+    const dx = p.x - drag.last.x, dy = p.y - drag.last.y;
+    const s = cell()[selIdx];
+    if (s) {
+      if (s.pts) s.pts.forEach(q => { q.x += dx; q.y += dy; });
+      else { s.x1 += dx; s.x2 += dx; s.y1 += dy; s.y2 += dy; }
+    }
+    drag.last = p;
+  }
+  render();
+});
+
+function endGesture() {
+  if (drag) { drag = null; refresh(); }
+}
+cv.addEventListener('pointerup', endGesture);
+cv.addEventListener('pointercancel', endGesture);
+
+/* ---------- history ---------- */
+function snap() { return JSON.stringify({ layers: S.layers, frameCount: S.frameCount }); }
+function pushHistory() {
+  undoS.push(snap());
+  if (undoS.length > 80) undoS.shift();
+  redoS = [];
+}
+function restore(str) {
+  const o = JSON.parse(str);
+  S.layers = o.layers;
+  S.frameCount = o.frameCount;
+  S.layer = clamp(S.layer, 0, S.layers.length - 1);
+  S.cur = clamp(S.cur, 0, S.frameCount - 1);
+  selIdx = -1;
+}
+function undo() { if (!undoS.length || playing) return; redoS.push(snap()); restore(undoS.pop()); refresh(); }
+function redo() { if (!redoS.length || playing) return; undoS.push(snap()); restore(redoS.pop()); refresh(); }
+
+/* ---------- layer & frame actions ---------- */
+function addLayer() {
+  pushHistory();
+  S.layers.push(mkLayer(S, 'طبقة ' + (S.layers.length + 1)));
+  S.layer = S.layers.length - 1;
+  refresh();
+}
+function delLayer() {
+  if (S.layers.length <= 1) return;
+  pushHistory();
+  S.layers.splice(S.layer, 1);
+  S.layer = clamp(S.layer, 0, S.layers.length - 1);
+  refresh();
+}
+function addFrame() {
+  if (S.frameCount >= 240) return;
+  pushHistory();
+  S.layers.forEach(L => L.frames.splice(S.cur + 1, 0, []));
+  S.frameCount++; S.cur++;
+  refresh();
+}
+function dupFrame() {
+  if (S.frameCount >= 240) return;
+  pushHistory();
+  S.layers.forEach(L => L.frames.splice(S.cur + 1, 0, JSON.parse(JSON.stringify(L.frames[S.cur]))));
+  S.frameCount++; S.cur++;
+  refresh();
+}
+function delFrame() {
+  if (S.frameCount <= 1) return;
+  pushHistory();
+  S.layers.forEach(L => L.frames.splice(S.cur, 1));
+  S.frameCount--;
+  S.cur = clamp(S.cur, 0, S.frameCount - 1);
+  refresh();
+}
+function clearFrame() { pushHistory(); cell().length = 0; selIdx = -1; refresh(); }
+function delSel() {
+  if (selIdx < 0) return;
+  pushHistory();
+  cell().splice(selIdx, 1);
+  selIdx = -1;
+  refresh();
+}
+function toggleOnion() { S.onion = !S.onion; refresh(); }
+
+const acts = { addLayer, delLayer, addFrame, dupFrame, delFrame, clearFrame, delSel, toggleOnion };
+document.addEventListener('click', e => {
+  const b = e.target.closest('[data-act]');
+  if (b && acts[b.dataset.act] && !playing) acts[b.dataset.act]();
+});
+
+/* ---------- timeline ---------- */
+function buildTl() {
+  const n = S.frameCount;
+  let h = '<div class="row ruler"><div class="lab"></div>';
+  for (let f = 0; f < n; f++) h += `<div class="cell${f === S.cur ? ' col' : ''}" data-f="${f}">${f + 1}</div>`;
+  h += '</div>';
+  for (let l = S.layers.length - 1; l >= 0; l--) {
+    const L = S.layers[l];
+    h += `<div class="row"><div class="lab${l === S.layer ? ' sel' : ''}" data-l="${l}"><button class="eye" data-eye="${l}">${L.visible ? '●' : '○'}</button><span class="name">${esc(L.name)}</span></div>`;
+    for (let f = 0; f < n; f++) {
+      const cls = ['cell'];
+      if (f === S.cur) cls.push('col');
+      if (f === S.cur && l === S.layer) cls.push('cur');
+      if (L.frames[f].length) cls.push('key');
+      h += `<div class="${cls.join(' ')}" data-l="${l}" data-f="${f}"></div>`;
+    }
+    h += '</div>';
+  }
+  tl.innerHTML = h;
+}
+function paintCursor() {
+  document.querySelectorAll('#tl [data-f]').forEach(el => el.classList.toggle('col', +el.dataset.f === S.cur));
+}
+tl.addEventListener('click', e => {
+  if (playing) return;
+  const eye = e.target.closest('[data-eye]');
+  if (eye) {
+    const l = +eye.dataset.eye;
+    S.layers[l].visible = !S.layers[l].visible;
+    refresh();
+    return;
+  }
+  const c = e.target.closest('[data-f]');
+  if (c) {
+    if (c.dataset.l !== undefined) S.layer = +c.dataset.l;
+    S.cur = +c.dataset.f;
+    selIdx = -1;
+  } else {
+    const lab = e.target.closest('.lab[data-l]');
+    if (lab) S.layer = +lab.dataset.l;
+  }
+  refresh();
+});
+
+/* ---------- playback ---------- */
+function tick() {
+  S.cur = (S.cur + 1) % S.frameCount;
+  selIdx = -1;
+  render();
+  paintCursor();
+  updateInfo();
+}
+function start() {
+  clearInterval(timer);
+  playing = true;
+  timer = setInterval(tick, 1000 / S.fps);
+  render();
+  updateInfo();
+}
+function stop() {
+  clearInterval(timer);
+  timer = null;
+  playing = false;
+  refresh();
+}
+function togglePlay() { playing ? stop() : start(); }
+
+/* ---------- preview strip ---------- */
+function showStrip() {
+  const n = Math.min(S.frameCount, 60);
+  const cols = Math.min(n, 6), rows = Math.ceil(n / cols), cs = 180;
+  const out = document.createElement('canvas');
+  out.width = cols * cs; out.height = rows * cs;
+  const o = out.getContext('2d');
+  o.fillStyle = '#ffffff';
+  o.fillRect(0, 0, out.width, out.height);
+  const full = document.createElement('canvas');
+  full.width = S.w; full.height = S.h;
+  const fc = full.getContext('2d');
+  for (let f = 0; f < n; f++) {
+    renderFrame(fc, f, { onion: false });
+    o.drawImage(full, (f % cols) * cs, Math.floor(f / cols) * cs, cs, cs);
+  }
+  $('#shot').src = out.toDataURL('image/png');
+  $('#modal').hidden = false;
+}
+
+/* ---------- save ---------- */
+function scheduleSave() {
+  clearTimeout(saveT);
+  saveT = setTimeout(() => { try { localStorage.setItem(KEY, JSON.stringify(S)); } catch (e) {} }, 400);
+}
+
+/* ---------- UI sync ---------- */
+function updateTools() {
+  document.querySelectorAll('[data-tool]').forEach(b => b.classList.toggle('on', b.dataset.tool === S.tool));
+  $('#delsel').disabled = selIdx < 0 || playing;
+  $('#color').value = S.color;
+  $('#size').value = S.size;
+  $('#onion').classList.toggle('on', S.onion);
+}
+function updateInfo() {
+  $('#fi').textContent = `إطار ${S.cur + 1}/${S.frameCount} · ${S.layers[S.layer].name}`;
+  $('#play').textContent = playing ? 'إيقاف' : 'تشغيل';
+  $('#fps').value = S.fps;
+  $('#undo').disabled = !undoS.length || playing;
+  $('#redo').disabled = !redoS.length || playing;
+}
+function refresh() {
+  buildTl();
+  render();
+  updateInfo();
+  updateTools();
+  scheduleSave();
+}
+
+document.querySelectorAll('[data-tool]').forEach(b => b.addEventListener('click', () => {
+  S.tool = b.dataset.tool;
+  selIdx = -1;
+  refresh();
+}));
+$('#color').addEventListener('input', e => { S.color = e.target.value; scheduleSave(); });
+$('#size').addEventListener('input', e => { S.size = +e.target.value; scheduleSave(); });
+$('#fps').addEventListener('input', e => {
+  S.fps = +e.target.value;
+  if (playing) start();
+  scheduleSave();
+});
+$('#undo').addEventListener('click', undo);
+$('#redo').addEventListener('click', redo);
+$('#play').addEventListener('click', togglePlay);
+$('#strip').addEventListener('click', showStrip);
+$('#close').addEventListener('click', () => { $('#modal').hidden = true; });
+
+refresh();
+</script>
