@@ -1,28 +1,70 @@
 <title>Frame Studio</title>
 <meta name="claude:viewport-fit-sides" content="cover">
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700&display=swap">
+<meta name="theme-color" content="#0d0d11">
+<link rel="manifest" href="manifest.json">
+<link rel="icon" href="icon-512.png">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700;800&display=swap">
 <style>
-:root{--bg:#0d0d11;--panel:#16161c;--panel2:#20202a;--line:#2c2c38;--fg:#eeeef4;--muted:#8d8da0;--accent:#ff7a3d;--accent-ink:#1d0c02;color-scheme:dark}
+:root{--bg:#0d0d11;--panel:#16161c;--panel2:#20202a;--line:#2c2c38;--fg:#eeeef4;--muted:#8d8da0;--accent:#ff7a3d;--accent2:#ffa86b;--accent-ink:#1d0c02;color-scheme:dark}
 html,body{height:100%;margin:0}
 body{background:var(--bg);color:var(--fg);font-family:"Tajawal",system-ui,-apple-system,sans-serif;font-size:14px;overflow:hidden}
 :focus-visible{outline:2px solid var(--accent);outline-offset:2px}
 button,input{font:inherit}
-button{color:var(--fg);background:var(--panel2);border:1px solid var(--line);border-radius:10px;min-height:38px;min-width:38px;padding:0 10px;cursor:pointer;flex:0 0 auto}
+button{color:var(--fg);background:var(--panel2);border:1px solid var(--line);border-radius:10px;min-height:38px;min-width:38px;padding:0 10px;cursor:pointer;flex:0 0 auto;transition:transform .15s}
+button:active{transform:scale(.96)}
 button:disabled{opacity:.35}
 button.on,button.primary{background:var(--accent);color:var(--accent-ink);border-color:var(--accent)}
 button.primary{font-weight:700}
+button.big{min-height:50px;font-size:16px;width:100%}
 svg.i{width:22px;height:22px;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
+input[type=text],input[type=password]{background:var(--panel2);border:1px solid var(--line);border-radius:12px;color:var(--fg);padding:12px;font-size:15px;width:100%;box-sizing:border-box}
 
-.app{height:100%;box-sizing:border-box;display:flex;flex-direction:column;gap:8px;padding-top:8px;padding-bottom:8px;padding-left:max(12px,env(safe-area-inset-left,0px));padding-right:max(12px,env(safe-area-inset-right,0px));min-width:0;max-width:1100px;margin:0 auto}
+/* ---------- animations ---------- */
+@keyframes pop{from{transform:scale(.55);opacity:0}to{transform:scale(1);opacity:1}}
+@keyframes rise{from{transform:translateY(14px);opacity:0}to{transform:translateY(0);opacity:1}}
+@keyframes shake{0%,100%{transform:translateX(0)}20%{transform:translateX(-9px)}40%{transform:translateX(9px)}60%{transform:translateX(-6px)}80%{transform:translateX(6px)}}
+@keyframes spin{to{transform:rotate(360deg)}}
+
+/* ---------- splash ---------- */
+#splash{position:fixed;inset:0;background:var(--bg);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:14px;z-index:100;transition:opacity .6s}
+#splash.out{opacity:0;pointer-events:none}
+#splash .logo{width:132px;height:132px;animation:pop .9s cubic-bezier(.2,1.4,.4,1) both;filter:drop-shadow(0 12px 30px rgba(255,122,61,.35))}
+#splash .name{font-size:28px;font-weight:800;animation:rise .8s .45s both}
+#splash .tag{color:var(--muted);animation:rise .8s .7s both}
+#splash .bar{width:120px;height:3px;border-radius:3px;background:var(--line);overflow:hidden;margin-top:18px;animation:rise .6s 1s both}
+#splash .bar::after{content:"";display:block;height:100%;width:40%;background:var(--accent);border-radius:3px;animation:slide 1.2s ease-in-out infinite}
+@keyframes slide{0%{transform:translateX(-100%)}100%{transform:translateX(260%)}}
+
+/* ---------- views ---------- */
+.view{position:absolute;inset:0;box-sizing:border-box;display:flex;flex-direction:column;gap:8px;padding-top:8px;padding-bottom:8px;padding-left:max(12px,env(safe-area-inset-left,0px));padding-right:max(12px,env(safe-area-inset-right,0px));max-width:1100px;margin:0 auto;min-width:0}
+#auth{justify-content:center;align-items:stretch}
+.auth-card{background:var(--panel);border:1px solid var(--line);border-radius:20px;padding:22px 18px;display:flex;flex-direction:column;gap:12px;animation:rise .6s .1s both}
+.auth-card.shake{animation:shake .45s}
+.auth-card .logo-s{width:72px;height:72px;align-self:center}
+.auth-card h1{margin:4px 0 0;text-align:center;font-size:22px}
+.tabs{display:flex;gap:6px;background:var(--panel2);border-radius:12px;padding:4px}
+.tabs button{flex:1;background:none;border:none;min-height:40px}
+.tabs button.on{background:var(--accent);color:var(--accent-ink)}
+.err{color:#ff6b6b;min-height:18px;font-size:13px;text-align:center}
+.hint{color:var(--muted);font-size:12px;margin:0;text-align:center}
+
+#home{overflow:auto}
 .top{display:flex;align-items:center;gap:6px}
-.brand{font-weight:700;font-size:16px;flex:1;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.brand{font-weight:800;font-size:17px;flex:1;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.hello{color:var(--muted);animation:rise .5s both}
+.list{display:flex;flex-direction:column;gap:10px}
+.card-p{display:flex;align-items:center;gap:10px;background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:12px;cursor:pointer;animation:rise .4s both}
+.card-p .meta{flex:1;min-width:0}
+.card-p .t{font-weight:700;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.card-p .d{color:var(--muted);font-size:12px}
 
+/* ---------- editor ---------- */
+#editor .top input{flex:1;min-width:0;padding:8px 10px;font-size:14px}
 .main{flex:1 1 auto;min-height:0;display:flex;flex-direction:column;gap:8px}
 .stage{flex:1 1 auto;min-height:0;display:flex;flex-direction:column;gap:4px}
 .info{color:var(--muted);font-size:12px;font-variant-numeric:tabular-nums;padding:0 4px}
 .canvas-box{position:relative;flex:1 1 auto;min-height:0;width:100%}
 canvas{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);background:#fff;border-radius:12px;box-shadow:0 0 0 1px var(--line);touch-action:none;display:block}
-
 .timeline{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:6px;display:flex;flex-direction:column;flex:0 0 auto}
 .tl-scroll{overflow:auto;max-height:22vh;direction:ltr;border-radius:8px}
 .row{display:flex;width:max-content}
@@ -36,18 +78,15 @@ canvas{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);backgro
 .cell.cur{box-shadow:inset 0 0 0 2px var(--accent)}
 .ruler .cell{height:26px;font-size:11px;color:var(--muted)}
 .ruler .cell.col{background:var(--accent);color:var(--accent-ink)}
-
-.sheet{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:8px}
+.sheet{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:8px;animation:rise .25s both}
 .panel{display:flex;flex-wrap:wrap;gap:6px;align-items:center}
 .panel label{display:flex;align-items:center;gap:8px;color:var(--muted)}
 .panel input[type=color]{width:38px;height:38px;border:1px solid var(--line);border-radius:10px;background:none;padding:2px}
 .panel input[type=range]{accent-color:var(--accent);width:140px}
-.hint{color:var(--muted);font-size:12px;width:100%}
-
+.panel .hint{width:100%}
 .dock{display:flex;gap:4px;background:var(--panel);border:1px solid var(--line);border-radius:16px;padding:6px}
 .dock button{flex:1 1 0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;min-height:54px;background:none;border:none;color:var(--muted);font-size:12px;padding:4px 0}
 .dock button.on{background:none;color:var(--accent);border:none}
-
 @media (min-width:700px) and (orientation:landscape){
   .main{flex-direction:row}
   .stage{flex:1.3}
@@ -60,11 +99,67 @@ canvas{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);backgro
 .modal p{color:var(--muted);margin:0;text-align:center;font-size:13px}
 </style>
 
-<div class="app" dir="rtl">
+<!-- Splash -->
+<div id="splash">
+  <svg class="logo" viewBox="0 0 120 120" aria-hidden="true">
+    <defs>
+      <linearGradient id="g" x1="0" y1="0" x2="1" y2="1">
+        <stop offset="0" stop-color="#ffa86b"/>
+        <stop offset="1" stop-color="#ff5a1f"/>
+      </linearGradient>
+    </defs>
+    <rect x="4" y="4" width="112" height="112" rx="28" fill="url(#g)"/>
+    <rect x="22" y="34" width="76" height="52" rx="9" fill="none" stroke="#1d0c02" stroke-width="6"/>
+    <path d="M52 47v26l22-13z" fill="#1d0c02"/>
+    <path d="M22 96h76" stroke="#1d0c02" stroke-width="5" stroke-linecap="round" opacity=".5"/>
+  </svg>
+  <div class="name">Frame Studio</div>
+  <div class="tag">استوديو الرسوم المتحركة</div>
+  <div class="bar"></div>
+</div>
+
+<!-- Auth -->
+<section id="auth" class="view" hidden>
+  <div class="auth-card" id="authCard">
+    <svg class="logo-s" viewBox="0 0 120 120" aria-hidden="true">
+      <defs><linearGradient id="g2" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#ffa86b"/><stop offset="1" stop-color="#ff5a1f"/></linearGradient></defs>
+      <rect x="4" y="4" width="112" height="112" rx="28" fill="url(#g2)"/>
+      <rect x="22" y="34" width="76" height="52" rx="9" fill="none" stroke="#1d0c02" stroke-width="6"/>
+      <path d="M52 47v26l22-13z" fill="#1d0c02"/>
+    </svg>
+    <h1>مرحباً بك في Frame Studio</h1>
+    <div class="tabs">
+      <button data-mode="login" class="on">دخول</button>
+      <button data-mode="register">حساب جديد</button>
+    </div>
+    <form id="authForm" style="display:flex;flex-direction:column;gap:12px">
+      <input type="text" id="u" placeholder="اسم المستخدم" autocomplete="username" required>
+      <input type="password" id="p" placeholder="كلمة المرور (4 أحرف على الأقل)" autocomplete="current-password" required>
+      <div id="err" class="err"></div>
+      <button type="submit" class="primary big" id="authBtn">دخول</button>
+    </form>
+    <p class="hint">بياناتك وحسابك محفوظة على هذا الجهاز</p>
+  </div>
+</section>
+
+<!-- Projects -->
+<section id="home" class="view" hidden>
   <header class="top">
-    <div class="brand">Frame Studio</div>
-    <button id="undo" aria-label="تراجع">تراجع</button>
-    <button id="redo" aria-label="إعادة">إعادة</button>
+    <div class="brand">مشاريعي</div>
+    <button id="logout">خروج</button>
+  </header>
+  <div class="hello" id="hello"></div>
+  <button class="primary big" id="newProj">+ مشروع جديد</button>
+  <div id="projList" class="list"></div>
+</section>
+
+<!-- Editor -->
+<section id="editor" class="view" hidden>
+  <header class="top">
+    <button id="backBtn" aria-label="رجوع">‹ المشاريع</button>
+    <input type="text" id="projName" aria-label="اسم المشروع">
+    <button id="undo">تراجع</button>
+    <button id="redo">إعادة</button>
     <button id="play" class="primary">تشغيل</button>
   </header>
 
@@ -73,7 +168,6 @@ canvas{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);backgro
       <div class="info" id="fi"></div>
       <div class="canvas-box" id="box"><canvas id="stage"></canvas></div>
     </section>
-
     <section class="timeline">
       <div class="tl-scroll"><div id="tl"></div></div>
     </section>
@@ -124,7 +218,7 @@ canvas{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);backgro
     <button data-sheet="motion" aria-label="حركة"><svg class="i" viewBox="0 0 24 24"><path d="M3 20c6 0 4-16 18-16"/></svg><span>حركة</span></button>
     <button data-sheet="export" aria-label="تصدير"><svg class="i" viewBox="0 0 24 24"><path d="M12 3v12M7 10l5 5 5-5M4 19h16"/></svg><span>تصدير</span></button>
   </nav>
-</div>
+</section>
 
 <div class="modal" id="modal" hidden>
   <img id="shot" alt="شريط الإطارات">
@@ -133,39 +227,179 @@ canvas{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);backgro
 </div>
 
 <script>
-const KEY = 'frame-studio-v1';
 const $ = s => document.querySelector(s);
 const clamp = (v, a, b) => Math.max(a, Math.min(b, v));
 const esc = s => String(s).replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
 
+/* ---------- local data: accounts and projects ---------- */
+const DB_KEY = 'fs-db';
+function readDb() {
+  try { return JSON.parse(localStorage.getItem(DB_KEY)) || { users: {}, session: null }; }
+  catch (e) { return { users: {}, session: null }; }
+}
+let DBX = readDb();
+function writeDb() { try { localStorage.setItem(DB_KEY, JSON.stringify(DBX)); } catch (e) {} }
+function curUser() { return (DBX.session && DBX.users[DBX.session]) || null; }
+
+function rand() { return [...crypto.getRandomValues(new Uint8Array(16))].map(x => x.toString(16).padStart(2, '0')).join(''); }
+async function hashPw(pw, salt) {
+  const b = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(salt + ':' + pw));
+  return [...new Uint8Array(b)].map(x => x.toString(16).padStart(2, '0')).join('');
+}
+
+/* ---------- views ---------- */
+function showView(name) {
+  ['auth', 'home', 'editor'].forEach(n => { $('#' + n).hidden = n !== name; });
+  if (name === 'editor') fit();
+}
+
+/* ---------- auth ---------- */
+let authMode = 'login';
+document.querySelectorAll('[data-mode]').forEach(b => b.addEventListener('click', () => {
+  authMode = b.dataset.mode;
+  document.querySelectorAll('[data-mode]').forEach(x => x.classList.toggle('on', x === b));
+  $('#authBtn').textContent = authMode === 'login' ? 'دخول' : 'إنشاء الحساب';
+  $('#err').textContent = '';
+}));
+function fail(msg) {
+  $('#err').textContent = msg;
+  const c = $('#authCard');
+  c.classList.remove('shake');
+  void c.offsetWidth;
+  c.classList.add('shake');
+}
+$('#authForm').addEventListener('submit', async e => {
+  e.preventDefault();
+  const u = $('#u').value.trim(), p = $('#p').value;
+  $('#err').textContent = '';
+  if (!u || p.length < 4) { fail('أدخل اسماً وكلمة مرور من 4 أحرف على الأقل'); return; }
+  try {
+    if (authMode === 'register') {
+      if (DBX.users[u]) { fail('هذا الاسم مستخدم بالفعل'); return; }
+      const salt = rand();
+      DBX.users[u] = { salt, hash: await hashPw(p, salt), projects: [] };
+    } else {
+      const acc = DBX.users[u];
+      if (!acc) { fail('الحساب غير موجود'); return; }
+      if (await hashPw(p, acc.salt) !== acc.hash) { fail('كلمة المرور غير صحيحة'); return; }
+    }
+    DBX.session = u;
+    writeDb();
+    goHome();
+  } catch (x) {
+    fail('تعذّر التحقق. افتح التطبيق عبر رابط https');
+  }
+});
+$('#logout').addEventListener('click', () => {
+  if (playing) stop();
+  if (S) saveProject();
+  S = null;
+  DBX.session = null;
+  writeDb();
+  showView('auth');
+});
+
+/* ---------- projects ---------- */
+function goHome() {
+  $('#hello').textContent = 'أهلاً ' + DBX.session;
+  renderHome();
+  showView('home');
+}
+function renderHome() {
+  const projs = curUser().projects;
+  const list = $('#projList');
+  if (!projs.length) {
+    list.innerHTML = '<p class="hint">لا توجد مشاريع بعد. ابدأ بإنشاء مشروع جديد.</p>';
+    return;
+  }
+  list.innerHTML = projs.slice().sort((a, b) => b.updated - a.updated).map(p =>
+    `<div class="card-p" data-open="${p.id}">
+       <div class="meta"><div class="t">${esc(p.name)}</div><div class="d">${new Date(p.updated).toLocaleString('ar')}</div></div>
+       <button data-del="${p.id}">حذف</button>
+     </div>`).join('');
+}
+$('#projList').addEventListener('click', e => {
+  const del = e.target.closest('[data-del]');
+  if (del) {
+    if (del.dataset.arm) {
+      const id = del.dataset.del;
+      const u = curUser();
+      u.projects = u.projects.filter(p => p.id !== id);
+      try { localStorage.removeItem('fs-p-' + id); } catch (x) {}
+      writeDb();
+      renderHome();
+    } else {
+      del.dataset.arm = '1';
+      del.textContent = 'تأكيد الحذف';
+      setTimeout(() => { delete del.dataset.arm; del.textContent = 'حذف'; }, 3000);
+    }
+    return;
+  }
+  const card = e.target.closest('[data-open]');
+  if (card) openProject(card.dataset.open);
+});
+$('#newProj').addEventListener('click', () => {
+  const u = curUser();
+  const id = Date.now().toString(36);
+  const name = 'مشروع ' + (u.projects.length + 1);
+  try { localStorage.setItem('fs-p-' + id, JSON.stringify(makeProject(id, name))); } catch (x) {}
+  u.projects.push({ id, name, updated: Date.now() });
+  writeDb();
+  openProject(id);
+});
+function openProject(id) {
+  const raw = localStorage.getItem('fs-p-' + id);
+  if (!raw) return;
+  S = JSON.parse(raw);
+  selIdx = -1; drag = null; undoS = []; redoS = [];
+  $('#projName').value = S.name;
+  showView('editor');
+  fit();
+  refresh();
+}
+$('#backBtn').addEventListener('click', () => {
+  if (playing) stop();
+  saveProject();
+  S = null;
+  goHome();
+});
+$('#projName').addEventListener('input', e => {
+  if (!S) return;
+  S.name = e.target.value.trim() || 'بدون اسم';
+  scheduleSave();
+});
+function saveProject() {
+  if (!S) return;
+  try { localStorage.setItem('fs-p-' + S.id, JSON.stringify(S)); } catch (e) {}
+  const u = curUser();
+  const pr = u && u.projects.find(p => p.id === S.id);
+  if (pr) { pr.name = S.name; pr.updated = Date.now(); writeDb(); }
+}
+let saveT = null;
+function scheduleSave() { clearTimeout(saveT); saveT = setTimeout(saveProject, 400); }
+
+/* ---------- editor state ---------- */
 function mkLayer(o, name) {
   return { name, visible: true, frames: Array.from({ length: o.frameCount }, () => []) };
 }
-function makeDefault() {
-  const o = { w: 540, h: 540, fps: 12, frameCount: 12, cur: 0, layer: 0, tool: 'brush', color: '#17171f', size: 6, onion: true, layers: [] };
+function makeProject(id, name) {
+  const o = { id, name, w: 540, h: 540, fps: 12, frameCount: 12, cur: 0, layer: 0, tool: 'brush', color: '#17171f', size: 6, onion: true, layers: [] };
   o.layers.push(mkLayer(o, 'طبقة 1'));
   return o;
 }
-function load() {
-  try {
-    const o = JSON.parse(localStorage.getItem(KEY));
-    if (o && o.layers && o.layers.length && o.frameCount > 0) return o;
-  } catch (e) {}
-  return null;
-}
 
-let S = load() || makeDefault();
+let S = null;
 const cv = $('#stage'), ctx = cv.getContext('2d');
 const tmp = document.createElement('canvas'), tctx = tmp.getContext('2d');
-cv.width = tmp.width = S.w;
-cv.height = tmp.height = S.h;
+cv.width = tmp.width = 540;
+cv.height = tmp.height = 540;
 const tl = $('#tl');
 
 let selIdx = -1, drag = null, playing = false, timer = null, sheetOpen = null;
-let undoS = [], redoS = [], saveT = null;
+let undoS = [], redoS = [];
 const cell = () => S.layers[S.layer].frames[S.cur];
 
-/* ---------- responsive canvas: fit the drawing box at any size ---------- */
+/* ---------- responsive canvas ---------- */
 const box = $('#box');
 function fit() {
   const r = box.getBoundingClientRect();
@@ -219,9 +453,8 @@ function drawShape(c, s) {
   c.restore();
 }
 
-// Draw one layer's shapes onto a scratch canvas, then composite with alpha.
 function compose(shapes, alpha, target) {
-  tctx.clearRect(0, 0, S.w, S.h);
+  tctx.clearRect(0, 0, 540, 540);
   for (const s of shapes) drawShape(tctx, s);
   target.save();
   target.globalAlpha = alpha;
@@ -285,7 +518,7 @@ function pos(e) {
 
 /* ---------- pointer input ---------- */
 cv.addEventListener('pointerdown', e => {
-  if (playing) return;
+  if (!S || playing) return;
   cv.setPointerCapture(e.pointerId);
   const p = pos(e), L = cell();
   if (S.tool === 'select') {
@@ -309,7 +542,6 @@ cv.addEventListener('pointerdown', e => {
   drag = { mode: 'draw', shape: s };
   render();
 });
-
 cv.addEventListener('pointermove', e => {
   if (!drag) return;
   const p = pos(e);
@@ -328,10 +560,7 @@ cv.addEventListener('pointermove', e => {
   }
   render();
 });
-
-function endGesture() {
-  if (drag) { drag = null; refresh(); }
-}
+function endGesture() { if (drag) { drag = null; refresh(); } }
 cv.addEventListener('pointerup', endGesture);
 cv.addEventListener('pointercancel', endGesture);
 
@@ -402,7 +631,7 @@ function toggleOnion() { S.onion = !S.onion; refresh(); }
 const acts = { addLayer, delLayer, addFrame, dupFrame, delFrame, clearFrame, delSel, toggleOnion };
 document.addEventListener('click', e => {
   const b = e.target.closest('[data-act]');
-  if (b && acts[b.dataset.act] && !playing) acts[b.dataset.act]();
+  if (b && S && acts[b.dataset.act] && !playing) acts[b.dataset.act]();
 });
 
 /* ---------- timeline ---------- */
@@ -429,7 +658,7 @@ function paintCursor() {
   document.querySelectorAll('#tl [data-f]').forEach(el => el.classList.toggle('col', +el.dataset.f === S.cur));
 }
 tl.addEventListener('click', e => {
-  if (playing) return;
+  if (!S || playing) return;
   const eye = e.target.closest('[data-eye]');
   if (eye) {
     const l = +eye.dataset.eye;
@@ -505,19 +734,14 @@ function saveImage(url, name) {
   a.remove();
 }
 document.querySelectorAll('[data-exp]').forEach(b => b.addEventListener('click', () => {
+  if (!S) return;
   const kind = b.dataset.exp;
   if (kind === 'frame') saveImage(frameURL(S.cur), 'frame-' + (S.cur + 1) + '.png');
   else if (kind === 'strip') saveImage(stripURL(), 'strip.png');
   else if (kind === 'preview') { $('#shot').src = stripURL(); $('#modal').hidden = false; }
 }));
 
-/* ---------- save ---------- */
-function scheduleSave() {
-  clearTimeout(saveT);
-  saveT = setTimeout(() => { try { localStorage.setItem(KEY, JSON.stringify(S)); } catch (e) {} }, 400);
-}
-
-/* ---------- panels (icon dock) ---------- */
+/* ---------- icon dock ---------- */
 function setSheet(key) {
   sheetOpen = key;
   document.querySelectorAll('[data-panel]').forEach(p => { p.hidden = p.dataset.panel !== key; });
@@ -553,13 +777,15 @@ function refresh() {
 }
 
 document.querySelectorAll('[data-tool]').forEach(b => b.addEventListener('click', () => {
+  if (!S) return;
   S.tool = b.dataset.tool;
   selIdx = -1;
   refresh();
 }));
-$('#color').addEventListener('input', e => { S.color = e.target.value; scheduleSave(); });
-$('#size').addEventListener('input', e => { S.size = +e.target.value; scheduleSave(); });
+$('#color').addEventListener('input', e => { if (S) { S.color = e.target.value; scheduleSave(); } });
+$('#size').addEventListener('input', e => { if (S) { S.size = +e.target.value; scheduleSave(); } });
 $('#fps').addEventListener('input', e => {
+  if (!S) return;
   S.fps = +e.target.value;
   if (playing) start();
   scheduleSave();
@@ -569,6 +795,16 @@ $('#redo').addEventListener('click', redo);
 $('#play').addEventListener('click', togglePlay);
 $('#close').addEventListener('click', () => { $('#modal').hidden = true; });
 
-fit();
-refresh();
+/* ---------- start: splash, then login or projects ---------- */
+setTimeout(() => {
+  $('#splash').classList.add('out');
+  setTimeout(() => {
+    $('#splash').hidden = true;
+    if (curUser()) goHome(); else showView('auth');
+  }, 600);
+}, 2600);
+
+if ('serviceWorker' in navigator && location.protocol.startsWith('http')) {
+  navigator.serviceWorker.register('sw.js').catch(() => {});
+}
 </script>
