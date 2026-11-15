@@ -20,6 +20,14 @@ button.big{min-height:50px;font-size:16px;width:100%}
 svg.i{width:22px;height:22px;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
 input[type=text],input[type=password]{background:var(--panel2);border:1px solid var(--line);border-radius:12px;color:var(--fg);padding:12px;font-size:15px;width:100%;box-sizing:border-box}
 
+/* ---------- tween editor ---------- */
+.tween-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:7px;width:100%}
+.tween-grid label{display:flex;flex-direction:column;gap:4px;color:var(--muted);font-size:12px;min-width:0}
+.tween-grid input,.tween-grid select{width:100%;min-width:0;box-sizing:border-box;background:var(--panel2);color:var(--fg);border:1px solid var(--line);border-radius:9px;padding:8px}
+.tween-actions{display:flex;gap:6px;flex-wrap:wrap;width:100%}
+.tween-status{width:100%;color:var(--muted);font-size:12px}
+@media(min-width:700px){.tween-grid{grid-template-columns:repeat(4,minmax(0,1fr))}}
+
 /* ---------- animations ---------- */
 @keyframes pop{from{transform:scale(.55);opacity:0}to{transform:scale(1);opacity:1}}
 @keyframes rise{from{transform:translateY(14px);opacity:0}to{transform:translateY(0);opacity:1}}
@@ -98,6 +106,18 @@ canvas{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);backgro
 .modal[hidden]{display:none}
 .modal img{max-width:100%;max-height:65vh;background:#fff;border-radius:8px}
 .modal p{color:var(--muted);margin:0;text-align:center;font-size:13px}
+/* ---------- professional graph editor ---------- */
+#graphModal{z-index:70;align-items:stretch;justify-content:flex-start;overflow:auto;background:rgba(5,5,9,.94)}
+.graph-shell{width:min(100%,980px);margin:auto;background:var(--panel);border:1px solid var(--line);border-radius:18px;padding:12px;display:flex;flex-direction:column;gap:10px;box-sizing:border-box}
+.graph-head{display:flex;align-items:center;gap:8px}.graph-head strong{font-size:17px;flex:1}
+.graph-tools{display:flex;gap:6px;flex-wrap:wrap}.graph-tools button{min-height:34px;font-size:12px}
+.graph-stage{position:relative;width:100%;height:clamp(230px,45vh,420px);background:#101016;border:1px solid var(--line);border-radius:12px;overflow:hidden}
+#graphCanvas{width:100%;height:100%;touch-action:none;display:block}
+.graph-values{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:7px}
+.graph-values label{font-size:11px;color:var(--muted);display:flex;flex-direction:column;gap:4px}
+.graph-values input{width:100%;min-width:0;box-sizing:border-box;background:var(--panel2);border:1px solid var(--line);border-radius:8px;color:var(--fg);padding:8px}
+.graph-footer{display:flex;align-items:center;gap:8px;flex-wrap:wrap}.graph-footer .hint{flex:1;text-align:right}
+@media(max-width:420px){.graph-values{grid-template-columns:repeat(2,minmax(0,1fr))}}
 </style>
 
 <!-- Splash -->
@@ -202,7 +222,24 @@ canvas{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);backgro
     </div>
     <div class="panel" data-panel="motion" hidden>
       <label>سرعة التشغيل <input id="fps" type="range" min="1" max="30"></label>
-      <span class="hint">محرر منحنيات الحركة بين الإطارات قادم في الخطوة التالية</span>
+      <div class="tween-actions"><button id="createTween" class="primary">إنشاء حركة للعنصر المحدد</button><button id="deleteTween">حذف الحركة</button><button id="openGraph">فتح Graph Editor</button></div>
+      <div class="tween-grid">
+        <label>الإطار الأول<input id="twStart" type="number" min="1" max="240" value="1"></label>
+        <label>الإطار الأخير<input id="twEnd" type="number" min="1" max="240" value="12"></label>
+        <label>موضع X البداية<input id="twX0" type="number" step="1" value="0"></label>
+        <label>موضع Y البداية<input id="twY0" type="number" step="1" value="0"></label>
+        <label>موضع X النهاية<input id="twX1" type="number" step="1" value="120"></label>
+        <label>موضع Y النهاية<input id="twY1" type="number" step="1" value="0"></label>
+        <label>الدوران البداية °<input id="twR0" type="number" step="1" value="0"></label>
+        <label>الدوران النهاية °<input id="twR1" type="number" step="1" value="0"></label>
+        <label>الحجم البداية %<input id="twS0" type="number" min="1" max="500" value="100"></label>
+        <label>الحجم النهاية %<input id="twS1" type="number" min="1" max="500" value="100"></label>
+        <label>الشفافية البداية %<input id="twO0" type="number" min="0" max="100" value="100"></label>
+        <label>الشفافية النهاية %<input id="twO1" type="number" min="0" max="100" value="100"></label>
+      </div>
+      <div class="tween-actions"><button id="applyTween">تحديث الحركة</button><button id="tweenToStart">انتقال للبداية</button><button id="tweenToEnd">انتقال للنهاية</button></div>
+      <span class="tween-status" id="tweenStatus">حدد رسماً من لوحة الرسم ثم أنشئ حركة. المنحنى المحفوظ في Graph Editor سيطبق على الحركة المحددة.</span>
+      <button data-exp="webm">تصدير الحركة WebM</button><button data-exp="project">نسخة احتياطية للمشروع JSON</button><button id="importProject">استيراد مشروع JSON</button><input id="projectFile" type="file" accept="application/json,.json" hidden>
     </div>
     <div class="panel" data-panel="export" hidden>
       <button data-exp="frame">حفظ الإطار PNG</button>
@@ -225,6 +262,23 @@ canvas{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);backgro
   <img id="shot" alt="شريط الإطارات">
   <p>إن لم يبدأ التنزيل، اضغط مطولاً على الصورة لحفظها في معرض هاتفك</p>
   <button id="close" class="primary">إغلاق</button>
+</div>
+
+<div class="modal" id="graphModal" hidden>
+  <section class="graph-shell" aria-label="Graph Editor">
+    <header class="graph-head"><strong>Graph Editor</strong><span class="hint">منحنى التوقيت والتسارع</span><button id="closeGraph">إغلاق</button></header>
+    <div class="graph-tools">
+      <button data-curve="linear">Linear</button><button data-curve="ease">Ease</button><button data-curve="easeIn">Ease In</button><button data-curve="easeOut">Ease Out</button><button data-curve="easeInOut">Ease In-Out</button><button data-curve="custom">Custom</button>
+    </div>
+    <div class="graph-stage"><canvas id="graphCanvas" aria-label="منحنى Bezier قابل للتحرير"></canvas></div>
+    <div class="graph-values">
+      <label>X1<input id="gx1" type="number" min="0" max="1" step="0.01"></label>
+      <label>Y1<input id="gy1" type="number" min="-2" max="2" step="0.01"></label>
+      <label>X2<input id="gx2" type="number" min="0" max="1" step="0.01"></label>
+      <label>Y2<input id="gy2" type="number" min="-2" max="2" step="0.01"></label>
+    </div>
+    <div class="graph-footer"><span class="hint" id="graphStatus">اسحب مقابض التحكم لتعديل المنحنى. يتم حفظ الإعداد مع المشروع.</span><button id="resetGraph">إعادة الضبط</button><button id="saveGraph" class="primary">حفظ المنحنى</button></div>
+  </section>
 </div>
 
 <script>
@@ -352,6 +406,8 @@ function openProject(id) {
   const raw = localStorage.getItem('fs-p-' + id);
   if (!raw) return;
   S = JSON.parse(raw);
+  if (!Array.isArray(S.tweens)) S.tweens = [];
+  if (!S.graphCurve) S.graphCurve = {x1:.25,y1:.1,x2:.25,y2:1};
   selIdx = -1; drag = null; undoS = []; redoS = [];
   $('#projName').value = S.name;
   showView('editor');
@@ -384,7 +440,7 @@ function mkLayer(o, name) {
   return { name, visible: true, frames: Array.from({ length: o.frameCount }, () => []) };
 }
 function makeProject(id, name) {
-  const o = { id, name, w: 540, h: 540, fps: 12, frameCount: 12, cur: 0, layer: 0, tool: 'brush', color: '#17171f', size: 6, onion: true, layers: [] };
+  const o = { id, name, w: 540, h: 540, fps: 12, frameCount: 12, cur: 0, layer: 0, tool: 'brush', color: '#17171f', size: 6, onion: true, graphCurve: { x1: .25, y1: .1, x2: .25, y2: 1 }, tweens: [], layers: [] };
   o.layers.push(mkLayer(o, 'طبقة 1'));
   return o;
 }
@@ -414,8 +470,25 @@ window.addEventListener('resize', fit);
 /* ---------- drawing ---------- */
 function mid(a, b) { return { x: (a.x + b.x) / 2, y: (a.y + b.y) / 2 }; }
 
-function drawShape(c, s) {
+function drawShape(c, s, frame=0, layerIndex=0, shapeIndex=0) {
+  const tween = (S.tweens || []).find(t => t.layer === layerIndex && t.shape === shapeIndex && frame >= t.start && frame <= t.end);
+  let tr = {x:0,y:0,rotation:0,scale:1,opacity:1};
+  if (tween) {
+    const span = Math.max(1, tween.end - tween.start);
+    const raw = clamp((frame - tween.start) / span, 0, 1);
+    const p = cubicBezierProgress(raw, tween.curve || S.graphCurve);
+    const lerp = (a,b) => a + (b-a)*p;
+    tr = {x:lerp(tween.from.x,tween.to.x), y:lerp(tween.from.y,tween.to.y),
+      rotation:lerp(tween.from.rotation,tween.to.rotation), scale:lerp(tween.from.scale,tween.to.scale),
+      opacity:lerp(tween.from.opacity,tween.to.opacity)};
+  }
+  const b = bbox(s), cx=b.x+b.w/2, cy=b.y+b.h/2;
   c.save();
+  c.translate(cx + tr.x, cy + tr.y);
+  c.rotate(tr.rotation * Math.PI / 180);
+  c.scale(tr.scale, tr.scale);
+  c.translate(-cx, -cy);
+  c.globalAlpha *= tr.opacity;
   c.strokeStyle = s.color;
   c.fillStyle = s.color;
   c.lineCap = 'round';
@@ -425,51 +498,32 @@ function drawShape(c, s) {
     if (s.type === 'erase') c.globalCompositeOperation = 'destination-out';
     const p = s.pts;
     c.beginPath();
-    if (p.length === 1) {
-      c.arc(p[0].x, p[0].y, s.size / 2, 0, Math.PI * 2);
-      c.fill();
-    } else {
+    if (p.length === 1) { c.arc(p[0].x, p[0].y, s.size / 2, 0, Math.PI * 2); c.fill(); }
+    else {
       c.moveTo(p[0].x, p[0].y);
-      for (let i = 1; i < p.length - 1; i++) {
-        const m = mid(p[i], p[i + 1]);
-        c.quadraticCurveTo(p[i].x, p[i].y, m.x, m.y);
-      }
-      c.lineTo(p[p.length - 1].x, p[p.length - 1].y);
-      c.stroke();
+      for (let i = 1; i < p.length - 1; i++) { const m = mid(p[i], p[i + 1]); c.quadraticCurveTo(p[i].x, p[i].y, m.x, m.y); }
+      c.lineTo(p[p.length - 1].x, p[p.length - 1].y); c.stroke();
     }
   } else {
     c.beginPath();
-    if (s.type === 'line') {
-      c.moveTo(s.x1, s.y1);
-      c.lineTo(s.x2, s.y2);
-    } else if (s.type === 'rect') {
-      const b = bbox(s);
-      c.rect(b.x, b.y, b.w, b.h);
-    } else if (s.type === 'ellipse') {
-      const b = bbox(s);
-      c.ellipse(b.x + b.w / 2, b.y + b.h / 2, b.w / 2, b.h / 2, 0, 0, Math.PI * 2);
-    }
+    if (s.type === 'line') { c.moveTo(s.x1, s.y1); c.lineTo(s.x2, s.y2); }
+    else if (s.type === 'rect') { const q=bbox(s); c.rect(q.x,q.y,q.w,q.h); }
+    else if (s.type === 'ellipse') { const q=bbox(s); c.ellipse(q.x+q.w/2,q.y+q.h/2,q.w/2,q.h/2,0,0,Math.PI*2); }
     c.stroke();
   }
   c.restore();
 }
 
-function compose(shapes, alpha, target) {
+function compose(shapes, alpha, target, frame=0, layerIndex=0) {
   tctx.clearRect(0, 0, 540, 540);
-  for (const s of shapes) drawShape(tctx, s);
-  target.save();
-  target.globalAlpha = alpha;
-  target.drawImage(tmp, 0, 0);
-  target.restore();
+  shapes.forEach((s,i) => drawShape(tctx,s,frame,layerIndex,i));
+  target.save(); target.globalAlpha = alpha; target.drawImage(tmp, 0, 0); target.restore();
 }
 
 function renderFrame(c, f, opt) {
-  c.save();
-  c.fillStyle = '#ffffff';
-  c.fillRect(0, 0, S.w, S.h);
-  c.restore();
-  if (opt.onion && f > 0) S.layers.forEach(L => { if (L.visible) compose(L.frames[f - 1], 0.22, c); });
-  S.layers.forEach(L => { if (L.visible) compose(L.frames[f], 1, c); });
+  c.save(); c.fillStyle = '#ffffff'; c.fillRect(0, 0, S.w, S.h); c.restore();
+  if (opt.onion && f > 0) S.layers.forEach((L,i) => { if (L.visible) compose(L.frames[f - 1], 0.22, c, f-1, i); });
+  S.layers.forEach((L,i) => { if (L.visible) compose(L.frames[f], 1, c, f, i); });
 }
 
 function render() {
@@ -740,7 +794,121 @@ document.querySelectorAll('[data-exp]').forEach(b => b.addEventListener('click',
   if (kind === 'frame') saveImage(frameURL(S.cur), 'frame-' + (S.cur + 1) + '.png');
   else if (kind === 'strip') saveImage(stripURL(), 'strip.png');
   else if (kind === 'preview') { $('#shot').src = stripURL(); $('#modal').hidden = false; }
+  else if (kind === 'project') exportProject();
+  else if (kind === 'webm') exportWebM();
 }));
+function exportProject(){saveImage('data:application/json;charset=utf-8,'+encodeURIComponent(JSON.stringify(S)),(S.name||'frame-studio')+'.json');}
+async function exportWebM(){
+  if(!S)return;
+  if(!window.MediaRecorder || !cv.captureStream){alert('تسجيل WebM غير مدعوم في هذا المتصفح. جرّب Chrome حديثاً.');return;}
+  const out=document.createElement('canvas');out.width=S.w;out.height=S.h;const oc=out.getContext('2d');
+  const stream=out.captureStream(S.fps);let mime='video/webm;codecs=vp9';if(!MediaRecorder.isTypeSupported(mime))mime='video/webm';
+  const chunks=[];const rec=new MediaRecorder(stream,{mimeType:mime});rec.ondataavailable=e=>{if(e.data.size)chunks.push(e.data);};
+  const done=new Promise(resolve=>{rec.onstop=resolve;});rec.start();
+  const old=S.cur;try{for(let f=0;f<S.frameCount;f++){renderFrame(oc,f,{onion:false});await new Promise(r=>setTimeout(r,1000/S.fps));}rec.stop();await done;const blob=new Blob(chunks,{type:'video/webm'});const url=URL.createObjectURL(blob);const a=document.createElement('a');a.href=url;a.download=(S.name||'animation')+'.webm';a.click();setTimeout(()=>URL.revokeObjectURL(url),30000);}catch(e){try{rec.stop();}catch(_){}alert('تعذر تصدير الفيديو: '+e.message);}finally{S.cur=old;refresh();}
+}
+$('#importProject').addEventListener('click',()=>$('#projectFile').click());
+$('#projectFile').addEventListener('change',async e=>{const f=e.target.files[0];if(!f)return;try{const o=JSON.parse(await f.text());if(!o.layers||!Array.isArray(o.layers)||!o.frameCount)throw new Error('ملف مشروع غير صالح');if(!Array.isArray(o.tweens))o.tweens=[];const id=Date.now().toString(36);o.id=id;o.name=(o.name||'مشروع مستورد')+' - نسخة';localStorage.setItem('fs-p-'+id,JSON.stringify(o));const u=curUser();u.projects.push({id,name:o.name,updated:Date.now()});writeDb();openProject(id);}catch(err){alert('تعذر استيراد المشروع: '+err.message);}e.target.value='';});
+
+
+/* ---------- Tween engine and keyframe interpolation ---------- */
+function bezierAt(t,a,b){const u=1-t;return 3*u*u*t*a+3*u*t*t*b+t*t*t;}
+function cubicBezierProgress(x, curve){
+  const c=curve||{x1:.25,y1:.1,x2:.25,y2:1};
+  let lo=0,hi=1,t=x;
+  for(let i=0;i<18;i++){const bx=bezierAt(t,c.x1,c.x2);if(Math.abs(bx-x)<1e-5)break;if(bx<x)lo=t;else hi=t;t=(lo+hi)/2;}
+  return bezierAt(t,c.y1,c.y2);
+}
+let activeTweenId=null;
+function tweenById(){return S && S.tweens.find(t=>t.id===activeTweenId) || null;}
+function readTweenForm(){
+  const n=id=>Number($('#'+id).value);
+  return {start:clamp(Math.round(n('twStart'))-1,0,S.frameCount-1),end:clamp(Math.round(n('twEnd'))-1,0,S.frameCount-1),
+    from:{x:n('twX0'),y:n('twY0'),rotation:n('twR0'),scale:n('twS0')/100,opacity:n('twO0')/100},
+    to:{x:n('twX1'),y:n('twY1'),rotation:n('twR1'),scale:n('twS1')/100,opacity:n('twO1')/100}};
+}
+function fillTweenForm(t){
+  if(!t)return;
+  $('#twStart').value=t.start+1;$('#twEnd').value=t.end+1;
+  $('#twX0').value=t.from.x;$('#twY0').value=t.from.y;$('#twR0').value=t.from.rotation;$('#twS0').value=Math.round(t.from.scale*100);$('#twO0').value=Math.round(t.from.opacity*100);
+  $('#twX1').value=t.to.x;$('#twY1').value=t.to.y;$('#twR1').value=t.to.rotation;$('#twS1').value=Math.round(t.to.scale*100);$('#twO1').value=Math.round(t.to.opacity*100);
+}
+function createTween(){
+  if(!S || selIdx<0 || !cell()[selIdx]){ $('#tweenStatus').textContent='اختر رسماً أولاً باستخدام أداة التحديد.';return; }
+  const a=readTweenForm(); if(a.end<=a.start){$('#tweenStatus').textContent='يجب أن يكون الإطار الأخير بعد الإطار الأول.';return;}
+  const t={id:'tw-'+Date.now().toString(36),layer:S.layer,shape:selIdx,...a,curve:{...S.graphCurve}};
+  S.tweens.push(t);activeTweenId=t.id;$('#tweenStatus').textContent='تم إنشاء الحركة وربطها بالعنصر المحدد.';scheduleSave();render();
+}
+function updateTween(){
+  const t=tweenById();if(!t){createTween();return;}
+  const a=readTweenForm();if(a.end<=a.start){$('#tweenStatus').textContent='يجب أن يكون الإطار الأخير بعد الإطار الأول.';return;}
+  Object.assign(t,a);t.layer=S.layer;t.shape=selIdx>=0?selIdx:t.shape;t.curve={...S.graphCurve};
+  $('#tweenStatus').textContent='تم تحديث الحركة.';scheduleSave();render();
+}
+$('#createTween').addEventListener('click',createTween);
+$('#applyTween').addEventListener('click',updateTween);
+$('#deleteTween').addEventListener('click',()=>{const t=tweenById();if(!t)return;S.tweens=S.tweens.filter(x=>x.id!==t.id);activeTweenId=null;$('#tweenStatus').textContent='تم حذف الحركة.';scheduleSave();render();});
+$('#tweenToStart').addEventListener('click',()=>{const t=tweenById();if(t){S.cur=t.start;refresh();}});
+$('#tweenToEnd').addEventListener('click',()=>{const t=tweenById();if(t){S.cur=t.end;refresh();}});
+
+/* ---------- Graph Editor: editable cubic Bezier timing curve ---------- */
+const graphCanvas = $('#graphCanvas');
+const graphCtx = graphCanvas.getContext('2d');
+let graphDraft = null, graphDrag = null, graphDpr = 1;
+const curvePresets = {
+  linear: [0, 0, 1, 1],
+  ease: [.25, .1, .25, 1],
+  easeIn: [.42, 0, 1, 1],
+  easeOut: [0, 0, .58, 1],
+  easeInOut: [.42, 0, .58, 1]
+};
+function curveNow() {
+  const active=tweenById(); const c = (active && active.curve) || (S && S.graphCurve) || {x1:.25,y1:.1,x2:.25,y2:1};
+  return [c.x1,c.y1,c.x2,c.y2];
+}
+function graphPoint(x,y,w,h) { return {x:x*w, y:(1-y)*h}; }
+function graphResize() {
+  if ($('#graphModal').hidden) return;
+  const r=graphCanvas.getBoundingClientRect(); graphDpr=Math.max(1,window.devicePixelRatio||1);
+  graphCanvas.width=Math.max(1,Math.round(r.width*graphDpr)); graphCanvas.height=Math.max(1,Math.round(r.height*graphDpr));
+  graphCtx.setTransform(graphDpr,0,0,graphDpr,0,0); drawGraph();
+}
+function drawGraph() {
+  if (!graphDraft) return;
+  const r=graphCanvas.getBoundingClientRect(), w=r.width, h=r.height, c=graphDraft;
+  const g=graphCtx; g.clearRect(0,0,w,h); g.fillStyle='#101016'; g.fillRect(0,0,w,h);
+  const pad=25, left=pad, top=pad, gw=w-pad*2, gh=h-pad*2;
+  g.strokeStyle='#292936'; g.lineWidth=1;
+  for(let i=0;i<=10;i++){const x=left+gw*i/10,y=top+gh*i/10;g.beginPath();g.moveTo(x,top);g.lineTo(x,top+gh);g.stroke();g.beginPath();g.moveTo(left,y);g.lineTo(left+gw,y);g.stroke();}
+  g.strokeStyle='#777789';g.setLineDash([4,4]);g.beginPath();g.moveTo(left,top+gh);g.lineTo(left+gw,top);g.stroke();g.setLineDash([]);
+  const p0={x:left,y:top+gh},p3={x:left+gw,y:top};
+  const p1={x:left+c[0]*gw,y:top+(1-c[1])*gh},p2={x:left+c[2]*gw,y:top+(1-c[3])*gh};
+  g.strokeStyle='#ff9a62';g.lineWidth=2.8;g.beginPath();g.moveTo(p0.x,p0.y);g.bezierCurveTo(p1.x,p1.y,p2.x,p2.y,p3.x,p3.y);g.stroke();
+  g.strokeStyle='#737384';g.lineWidth=1.3;g.beginPath();g.moveTo(p0.x,p0.y);g.lineTo(p1.x,p1.y);g.moveTo(p3.x,p3.y);g.lineTo(p2.x,p2.y);g.stroke();
+  [[p1,'#ffd0ae'],[p2,'#ff7a3d']].forEach(([p,col])=>{g.beginPath();g.arc(p.x,p.y,7,0,Math.PI*2);g.fillStyle=col;g.fill();g.strokeStyle='#17171f';g.lineWidth=2;g.stroke();});
+  g.fillStyle='#8d8da0';g.font='11px sans-serif';g.fillText('OUTPUT',left+4,13);g.fillText('TIME',w-43,h-7);
+  // animated progress marker, illustrating the curve's timing profile
+  const t=(performance.now()/1800)%1, mt=1-t;
+  const bx=mt*mt*mt*p0.x+3*mt*mt*t*p1.x+3*mt*t*t*p2.x+t*t*t*p3.x;
+  const by=mt*mt*mt*p0.y+3*mt*mt*t*p1.y+3*mt*t*t*p2.y+t*t*t*p3.y;
+  g.beginPath();g.arc(bx,by,4,0,Math.PI*2);g.fillStyle='#ffffff';g.fill();
+}
+function syncGraphInputs(){['x1','y1','x2','y2'].forEach((k,i)=>$('#g'+k).value=Number(graphDraft[i].toFixed(2)));}
+function setGraphCurve(vals){graphDraft=vals.slice();graphDraft[0]=clamp(graphDraft[0],0,1);graphDraft[2]=clamp(graphDraft[2],0,1);graphDraft[1]=clamp(graphDraft[1],-2,2);graphDraft[3]=clamp(graphDraft[3],-2,2);syncGraphInputs();drawGraph();}
+function graphAnimationLoop(){if($('#graphModal').hidden)return;drawGraph();requestAnimationFrame(graphAnimationLoop);}
+function openGraph(){if(!S)return;graphDraft=curveNow();$('#graphModal').hidden=false;syncGraphInputs();requestAnimationFrame(()=>{graphResize();requestAnimationFrame(graphAnimationLoop);});}
+function closeGraph(save){if(save&&S){const curve={x1:graphDraft[0],y1:graphDraft[1],x2:graphDraft[2],y2:graphDraft[3]};const active=tweenById();if(active)active.curve=curve;else S.graphCurve=curve;scheduleSave();$('#graphStatus').textContent=active?'تم حفظ المنحنى للحركة المحددة.':'تم حفظ المنحنى الافتراضي للمشروع.';}$('#graphModal').hidden=true;}
+$('#openGraph').addEventListener('click',openGraph);
+$('#closeGraph').addEventListener('click',()=>closeGraph(false));
+$('#saveGraph').addEventListener('click',()=>closeGraph(true));
+$('#resetGraph').addEventListener('click',()=>setGraphCurve(curvePresets.ease));
+document.querySelectorAll('[data-curve]').forEach(b=>b.addEventListener('click',()=>{const key=b.dataset.curve;setGraphCurve(curvePresets[key]||curveNow());document.querySelectorAll('[data-curve]').forEach(x=>x.classList.toggle('on',x===b));}));
+['x1','y1','x2','y2'].forEach((k,i)=>$('#g'+k).addEventListener('change',e=>{const v=Number(e.target.value);if(Number.isFinite(v)){graphDraft[i]=v;setGraphCurve(graphDraft);}}));
+function graphCoords(e){const r=graphCanvas.getBoundingClientRect(),pad=25;return {x:clamp((e.clientX-r.left-pad)/(r.width-pad*2),0,1),y:clamp(1-(e.clientY-r.top-pad)/(r.height-pad*2),-2,2)};}
+graphCanvas.addEventListener('pointerdown',e=>{const q=graphCoords(e),d1=Math.hypot(q.x-graphDraft[0],q.y-graphDraft[1]),d2=Math.hypot(q.x-graphDraft[2],q.y-graphDraft[3]);graphDrag=d1<d2?0:1;graphCanvas.setPointerCapture(e.pointerId);});
+graphCanvas.addEventListener('pointermove',e=>{if(graphDrag===null)return;const q=graphCoords(e),i=graphDrag*2;graphDraft[i]=q.x;graphDraft[i+1]=q.y;graphDraft[0]=clamp(graphDraft[0],0,1);graphDraft[2]=clamp(graphDraft[2],0,1);syncGraphInputs();drawGraph();});
+function endGraphDrag(){graphDrag=null;}graphCanvas.addEventListener('pointerup',endGraphDrag);graphCanvas.addEventListener('pointercancel',endGraphDrag);
+window.addEventListener('resize',graphResize);
 
 /* ---------- icon dock ---------- */
 function setSheet(key) {
