@@ -1,4 +1,4 @@
-<title>Frame Studio</title>
+<title>Frame Studio 2.2</title>
 <meta name="claude:viewport-fit-sides" content="cover">
 <meta name="theme-color" content="#0d0d11">
 <link rel="manifest" href="manifest.json">
@@ -118,6 +118,46 @@ canvas{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);backgro
 .graph-values input{width:100%;min-width:0;box-sizing:border-box;background:var(--panel2);border:1px solid var(--line);border-radius:8px;color:var(--fg);padding:8px}
 .graph-footer{display:flex;align-items:center;gap:8px;flex-wrap:wrap}.graph-footer .hint{flex:1;text-align:right}
 @media(max-width:420px){.graph-values{grid-template-columns:repeat(2,minmax(0,1fr))}}
+
+/* ---------- organized mobile tool system ---------- */
+.tool-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:9px;width:100%}
+.tool-tile{min-height:76px!important;border-radius:14px!important;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;padding:8px 4px!important;background:var(--panel2)!important;border:1px solid var(--line)!important;color:var(--fg)!important;font-size:12px!important}
+.tool-tile .i{width:25px;height:25px;color:var(--accent)}
+.tool-tile:active{background:#30251f!important}
+.tool-tile.primary{background:var(--accent)!important;color:var(--accent-ink)!important}
+.tool-tile.primary .i{color:var(--accent-ink)}
+.tool-tile.danger .i{color:#ff7777}
+.dock{overflow-x:auto;scrollbar-width:none}
+.dock::-webkit-scrollbar{display:none}
+.dock button{min-width:54px}
+.dock button .i{width:22px;height:22px}
+#editor .top{gap:5px;min-height:44px}
+#backBtn{width:42px;min-width:42px;padding:0;border-radius:12px;font-size:0}
+#backBtn .i{width:22px;height:22px}
+#projName{max-width:36%;flex:1}
+#undo,#redo{font-size:0;width:40px;min-width:40px;padding:0}
+#undo .i,#redo .i{width:19px;height:19px}
+#play{min-width:66px}
+.sheet{max-height:30vh;overflow:auto}
+.panel{width:100%}
+.palette-grid{display:grid;grid-template-columns:repeat(8,minmax(0,1fr));gap:8px;width:100%}
+.swatch{aspect-ratio:1;border-radius:50%;min-width:0;min-height:0;padding:0;border:2px solid rgba(255,255,255,.18);box-shadow:inset 0 0 0 1px rgba(0,0,0,.2)}
+.swatch.active{outline:2px solid var(--accent);outline-offset:2px}
+.palette-head{display:flex;align-items:center;gap:8px;width:100%}
+.palette-head input[type=color]{width:42px;height:42px}
+.modal-card{width:min(100%,720px);max-height:90dvh;overflow:auto;background:var(--panel);border:1px solid var(--line);border-radius:18px;padding:14px;box-sizing:border-box;display:flex;flex-direction:column;gap:12px}
+.modal-head{display:flex;align-items:center;gap:8px}
+.modal-head strong{font-size:17px;flex:1}
+.modal-head button{width:40px;min-width:40px}
+.motion-fields{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}
+.motion-fields label{display:flex;flex-direction:column;gap:4px;color:var(--muted);font-size:12px}
+.motion-fields input{width:100%;box-sizing:border-box;background:var(--panel2);border:1px solid var(--line);border-radius:10px;padding:10px;color:var(--fg)}
+.export-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:9px}
+.export-tile{min-height:86px!important;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px}
+.export-tile .i{color:var(--accent);width:26px;height:26px}
+.export-note{color:var(--muted);font-size:12px;line-height:1.6}
+@media(max-width:380px){.tool-grid{grid-template-columns:repeat(3,minmax(0,1fr));gap:6px}.tool-tile{font-size:11px!important;min-height:68px!important}.palette-grid{grid-template-columns:repeat(7,minmax(0,1fr))}}
+
 </style>
 
 <!-- Splash -->
@@ -177,10 +217,10 @@ canvas{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);backgro
 <!-- Editor -->
 <section id="editor" class="view" hidden>
   <header class="top">
-    <button id="backBtn" aria-label="رجوع">‹ المشاريع</button>
+    <button id="backBtn" aria-label="رجوع إلى المشاريع" title="رجوع"><svg class="i" viewBox="0 0 24 24"><path d="M15 18l-6-6 6-6"/></svg></button>
     <input type="text" id="projName" aria-label="اسم المشروع">
-    <button id="undo">تراجع</button>
-    <button id="redo">إعادة</button>
+    <button id="undo" aria-label="تراجع" title="تراجع"><svg class="i" viewBox="0 0 24 24"><path d="M9 14L4 9l5-5"/><path d="M4 9h10a6 6 0 010 12h-2"/></svg></button>
+    <button id="redo" aria-label="إعادة" title="إعادة"><svg class="i" viewBox="0 0 24 24"><path d="M15 14l5-5-5-5"/><path d="M20 9H10a6 6 0 000 12h2"/></svg></button>
     <button id="play" class="primary">تشغيل</button>
   </header>
 
@@ -213,6 +253,10 @@ canvas{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);backgro
       <button data-act="delLayer">حذف الطبقة</button>
       <span class="hint">اضغط على ● بجانب اسم الطبقة لإخفائها أو إظهارها</span>
     </div>
+    <div class="panel" data-panel="palette" hidden>
+      <div class="palette-head"><input type="color" id="paletteCustom" aria-label="اختيار لون مخصص"><strong>لوحة الألوان</strong><button id="addPaletteColor">+ حفظ اللون</button></div>
+      <div class="palette-grid" id="paletteGrid"></div>
+    </div>
     <div class="panel" data-panel="frames" hidden>
       <button data-act="addFrame">+ إطار</button>
       <button data-act="dupFrame">نسخ الإطار</button>
@@ -221,30 +265,29 @@ canvas{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);backgro
       <button id="onion" data-act="toggleOnion">قشرة الإطار السابق</button>
     </div>
     <div class="panel" data-panel="motion" hidden>
-      <label>سرعة التشغيل <input id="fps" type="range" min="1" max="30"></label>
-      <div class="tween-actions"><button id="createTween" class="primary">إنشاء حركة للعنصر المحدد</button><button id="deleteTween">حذف الحركة</button><button id="openGraph">فتح Graph Editor</button></div>
-      <div class="tween-grid">
-        <label>الإطار الأول<input id="twStart" type="number" min="1" max="240" value="1"></label>
-        <label>الإطار الأخير<input id="twEnd" type="number" min="1" max="240" value="12"></label>
-        <label>موضع X البداية<input id="twX0" type="number" step="1" value="0"></label>
-        <label>موضع Y البداية<input id="twY0" type="number" step="1" value="0"></label>
-        <label>موضع X النهاية<input id="twX1" type="number" step="1" value="120"></label>
-        <label>موضع Y النهاية<input id="twY1" type="number" step="1" value="0"></label>
-        <label>الدوران البداية °<input id="twR0" type="number" step="1" value="0"></label>
-        <label>الدوران النهاية °<input id="twR1" type="number" step="1" value="0"></label>
-        <label>الحجم البداية %<input id="twS0" type="number" min="1" max="500" value="100"></label>
-        <label>الحجم النهاية %<input id="twS1" type="number" min="1" max="500" value="100"></label>
-        <label>الشفافية البداية %<input id="twO0" type="number" min="0" max="100" value="100"></label>
-        <label>الشفافية النهاية %<input id="twO1" type="number" min="0" max="100" value="100"></label>
+      <div class="tool-grid">
+        <button class="tool-tile primary" id="openMotion"><svg class="i" viewBox="0 0 24 24"><path d="M4 19V5m0 14h16M7 15l4-5 3 3 6-8"/></svg><span>خصائص الحركة</span></button>
+        <button class="tool-tile" id="openGraph"><svg class="i" viewBox="0 0 24 24"><path d="M3 19c5 0 4-14 9-14s4 14 9 14"/></svg><span>Graph Editor</span></button>
+        <button class="tool-tile" id="createTween"><svg class="i" viewBox="0 0 24 24"><path d="M5 12h14M12 5v14"/><circle cx="12" cy="12" r="9"/></svg><span>إنشاء حركة</span></button>
+        <button class="tool-tile danger" id="deleteTween"><svg class="i" viewBox="0 0 24 24"><path d="M4 7h16M10 11v6m4-6v6M6 7l1 13h10l1-13M9 7V4h6v3"/></svg><span>حذف الحركة</span></button>
+        <button class="tool-tile" id="tweenToStart"><svg class="i" viewBox="0 0 24 24"><path d="M5 5v14M19 12H8m5-5l-5 5 5 5"/></svg><span>إطار البداية</span></button>
+        <button class="tool-tile" id="tweenToEnd"><svg class="i" viewBox="0 0 24 24"><path d="M19 5v14M5 12h11m-5-5l5 5-5 5"/></svg><span>إطار النهاية</span></button>
       </div>
-      <div class="tween-actions"><button id="applyTween">تحديث الحركة</button><button id="tweenToStart">انتقال للبداية</button><button id="tweenToEnd">انتقال للنهاية</button></div>
-      <span class="tween-status" id="tweenStatus">حدد رسماً من لوحة الرسم ثم أنشئ حركة. المنحنى المحفوظ في Graph Editor سيطبق على الحركة المحددة.</span>
-      <button data-exp="webm">تصدير الحركة WebM</button><button data-exp="project">نسخة احتياطية للمشروع JSON</button><button id="importProject">استيراد مشروع JSON</button><input id="projectFile" type="file" accept="application/json,.json" hidden>
+      <div class="tween-status" id="tweenStatus">اختر رسماً ثم أنشئ حركة. خصائص الحركة ومنحنى Graph Editor منفصلان ومنظمان.</div>
+      <label style="display:flex;align-items:center;gap:10px;color:var(--muted);width:100%">سرعة التشغيل <input id="fps" type="range" min="1" max="30" style="flex:1;accent-color:var(--accent)"></label>
     </div>
     <div class="panel" data-panel="export" hidden>
-      <button data-exp="frame">حفظ الإطار PNG</button>
-      <button data-exp="strip">حفظ الشريط PNG</button>
-      <button data-exp="preview">معاينة الشريط</button>
+      <div class="export-grid">
+        <button class="export-tile" data-exp="frame"><svg class="i" viewBox="0 0 24 24"><path d="M4 4h16v16H4zM8 16l3-3 2 2 3-4 2 5"/></svg><span>صورة PNG</span></button>
+        <button class="export-tile" data-exp="strip"><svg class="i" viewBox="0 0 24 24"><rect x="3" y="4" width="8" height="7" rx="1"/><rect x="13" y="4" width="8" height="7" rx="1"/><rect x="3" y="13" width="8" height="7" rx="1"/><rect x="13" y="13" width="8" height="7" rx="1"/></svg><span>شريط PNG</span></button>
+        <button class="export-tile" data-exp="gif"><svg class="i" viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="16" rx="2"/><path d="M8 10a3 3 0 103 3H8m8-3v6"/></svg><span>تصدير GIF</span></button>
+        <button class="export-tile" data-exp="video"><svg class="i" viewBox="0 0 24 24"><rect x="3" y="5" width="13" height="14" rx="2"/><path d="M16 10l5-3v10l-5-3z"/></svg><span>تصدير فيديو</span></button>
+        <button class="export-tile" data-exp="project"><svg class="i" viewBox="0 0 24 24"><path d="M12 3v12m-5-5l5 5 5-5M4 19h16"/></svg><span>نسخة المشروع</span></button>
+        <button class="export-tile" id="importProject"><svg class="i" viewBox="0 0 24 24"><path d="M12 15V3m-5 5l5-5 5 5M4 19h16"/></svg><span>استيراد مشروع</span></button>
+        <button class="export-tile" data-exp="preview"><svg class="i" viewBox="0 0 24 24"><path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7-10-7-10-7z"/><circle cx="12" cy="12" r="3"/></svg><span>معاينة الإطارات</span></button>
+      </div>
+      <input id="projectFile" type="file" accept="application/json,.json" hidden>
+      <p class="export-note">GIF يتم ترميزه داخل التطبيق. الفيديو يحاول MP4 أولاً، وإذا لم يدعمه المتصفح يصدر WebM تلقائياً مع توضيح الصيغة.</p>
     </div>
   </section>
 
@@ -253,6 +296,7 @@ canvas{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);backgro
     <button data-sheet="shapes" aria-label="أشكال"><svg class="i" viewBox="0 0 24 24"><rect x="3" y="5" width="11" height="11" rx="2"/><circle cx="16" cy="15" r="5"/></svg><span>أشكال</span></button>
     <button data-sheet="layers" aria-label="طبقات"><svg class="i" viewBox="0 0 24 24"><path d="M12 3l9 5-9 5-9-5z"/><path d="M3 13l9 5 9-5"/></svg><span>طبقات</span></button>
     <button data-sheet="frames" aria-label="إطارات"><svg class="i" viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="16" rx="2"/><path d="M3 10h18M9 4v16"/></svg><span>إطارات</span></button>
+    <button data-sheet="palette" aria-label="لوحة الألوان"><svg class="i" viewBox="0 0 24 24"><path d="M12 3a9 9 0 100 18h2a2 2 0 002-2 2 2 0 00-1-1.7 1.5 1.5 0 011-2.8H18a3 3 0 003-3 9 9 0 00-9-8.5z"/><circle cx="7.5" cy="10" r="1"/><circle cx="11" cy="7" r="1"/><circle cx="16" cy="8" r="1"/></svg><span>ألوان</span></button>
     <button data-sheet="motion" aria-label="حركة"><svg class="i" viewBox="0 0 24 24"><path d="M3 20c6 0 4-16 18-16"/></svg><span>حركة</span></button>
     <button data-sheet="export" aria-label="تصدير"><svg class="i" viewBox="0 0 24 24"><path d="M12 3v12M7 10l5 5 5-5M4 19h16"/></svg><span>تصدير</span></button>
   </nav>
@@ -262,6 +306,28 @@ canvas{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);backgro
   <img id="shot" alt="شريط الإطارات">
   <p>إن لم يبدأ التنزيل، اضغط مطولاً على الصورة لحفظها في معرض هاتفك</p>
   <button id="close" class="primary">إغلاق</button>
+</div>
+
+<div class="modal" id="motionModal" hidden>
+  <section class="modal-card">
+    <header class="modal-head"><strong>خصائص الحركة</strong><button id="closeMotion" aria-label="إغلاق">✕</button></header>
+    <div class="motion-fields">
+      <label>إطار البداية<input id="twStart" type="number" min="1" max="240" value="1"></label>
+      <label>إطار النهاية<input id="twEnd" type="number" min="1" max="240" value="12"></label>
+      <label>موضع X البداية<input id="twX0" type="number" step="1" value="0"></label>
+      <label>موضع Y البداية<input id="twY0" type="number" step="1" value="0"></label>
+      <label>موضع X النهاية<input id="twX1" type="number" step="1" value="120"></label>
+      <label>موضع Y النهاية<input id="twY1" type="number" step="1" value="0"></label>
+      <label>الدوران البداية °<input id="twR0" type="number" step="1" value="0"></label>
+      <label>الدوران النهاية °<input id="twR1" type="number" step="1" value="0"></label>
+      <label>الحجم البداية %<input id="twS0" type="number" min="1" max="500" value="100"></label>
+      <label>الحجم النهاية %<input id="twS1" type="number" min="1" max="500" value="100"></label>
+      <label>الشفافية البداية %<input id="twO0" type="number" min="0" max="100" value="100"></label>
+      <label>الشفافية النهاية %<input id="twO1" type="number" min="0" max="100" value="100"></label>
+    </div>
+    <div class="tween-actions"><button id="applyTween" class="primary">حفظ / تحديث الحركة</button><button id="closeMotion2">إغلاق</button></div>
+    <p class="export-note">حدد العنصر بأداة التحديد قبل إنشاء الحركة. كل القيم مستقلة عن لوحة الرسم.</p>
+  </section>
 </div>
 
 <div class="modal" id="graphModal" hidden>
@@ -407,6 +473,7 @@ function openProject(id) {
   if (!raw) return;
   S = JSON.parse(raw);
   if (!Array.isArray(S.tweens)) S.tweens = [];
+  if (!Array.isArray(S.palette)) S.palette = defaultPalette.slice();
   if (!S.graphCurve) S.graphCurve = {x1:.25,y1:.1,x2:.25,y2:1};
   selIdx = -1; drag = null; undoS = []; redoS = [];
   $('#projName').value = S.name;
@@ -440,7 +507,7 @@ function mkLayer(o, name) {
   return { name, visible: true, frames: Array.from({ length: o.frameCount }, () => []) };
 }
 function makeProject(id, name) {
-  const o = { id, name, w: 540, h: 540, fps: 12, frameCount: 12, cur: 0, layer: 0, tool: 'brush', color: '#17171f', size: 6, onion: true, graphCurve: { x1: .25, y1: .1, x2: .25, y2: 1 }, tweens: [], layers: [] };
+  const o = { id, name, w: 540, h: 540, fps: 12, frameCount: 12, cur: 0, layer: 0, tool: 'brush', color: '#17171f', size: 6, onion: true, graphCurve: { x1: .25, y1: .1, x2: .25, y2: 1 }, tweens: [], palette: ['#111827','#374151','#6b7280','#d1d5db','#ffffff','#ef4444','#f97316','#f59e0b','#eab308','#84cc16','#22c55e','#10b981','#14b8a6','#06b6d4','#0ea5e9','#3b82f6','#6366f1','#8b5cf6','#a855f7','#d946ef','#ec4899','#f43f5e'], layers: [] };
   o.layers.push(mkLayer(o, 'طبقة 1'));
   return o;
 }
@@ -795,17 +862,91 @@ document.querySelectorAll('[data-exp]').forEach(b => b.addEventListener('click',
   else if (kind === 'strip') saveImage(stripURL(), 'strip.png');
   else if (kind === 'preview') { $('#shot').src = stripURL(); $('#modal').hidden = false; }
   else if (kind === 'project') exportProject();
-  else if (kind === 'webm') exportWebM();
+  else if (kind === 'video') exportVideo();
+  else if (kind === 'gif') exportGIF();
 }));
 function exportProject(){saveImage('data:application/json;charset=utf-8,'+encodeURIComponent(JSON.stringify(S)),(S.name||'frame-studio')+'.json');}
-async function exportWebM(){
+async function exportVideo(){
   if(!S)return;
-  if(!window.MediaRecorder || !cv.captureStream){alert('تسجيل WebM غير مدعوم في هذا المتصفح. جرّب Chrome حديثاً.');return;}
+  if(!window.MediaRecorder){alert('تسجيل الفيديو غير مدعوم في هذا المتصفح. جرّب Chrome حديثاً.');return;}
   const out=document.createElement('canvas');out.width=S.w;out.height=S.h;const oc=out.getContext('2d');
-  const stream=out.captureStream(S.fps);let mime='video/webm;codecs=vp9';if(!MediaRecorder.isTypeSupported(mime))mime='video/webm';
-  const chunks=[];const rec=new MediaRecorder(stream,{mimeType:mime});rec.ondataavailable=e=>{if(e.data.size)chunks.push(e.data);};
-  const done=new Promise(resolve=>{rec.onstop=resolve;});rec.start();
-  const old=S.cur;try{for(let f=0;f<S.frameCount;f++){renderFrame(oc,f,{onion:false});await new Promise(r=>setTimeout(r,1000/S.fps));}rec.stop();await done;const blob=new Blob(chunks,{type:'video/webm'});const url=URL.createObjectURL(blob);const a=document.createElement('a');a.href=url;a.download=(S.name||'animation')+'.webm';a.click();setTimeout(()=>URL.revokeObjectURL(url),30000);}catch(e){try{rec.stop();}catch(_){}alert('تعذر تصدير الفيديو: '+e.message);}finally{S.cur=old;refresh();}
+  const stream=out.captureStream(S.fps);
+  const candidates=['video/mp4;codecs="avc1.42E01E"','video/mp4','video/webm;codecs=vp9','video/webm'];
+  const mime=candidates.find(t=>MediaRecorder.isTypeSupported(t));
+  if(!mime){alert('هذا المتصفح لا يدعم تصدير MP4 أو WebM.');return;}
+  const chunks=[];const rec=new MediaRecorder(stream,{mimeType:mime,videoBitsPerSecond:6000000});
+  rec.ondataavailable=e=>{if(e.data.size)chunks.push(e.data);};
+  const done=new Promise(resolve=>{rec.onstop=resolve;});const old=S.cur;
+  try{
+    rec.start();
+    for(let f=0;f<S.frameCount;f++){renderFrame(oc,f,{onion:false});await new Promise(r=>setTimeout(r,1000/S.fps));}
+    rec.stop();await done;
+    const isMp4=mime.includes('mp4'),ext=isMp4?'mp4':'webm';
+    const blob=new Blob(chunks,{type:mime});const url=URL.createObjectURL(blob);
+    const a=document.createElement('a');a.href=url;a.download=(S.name||'animation')+'.'+ext;a.click();
+    setTimeout(()=>URL.revokeObjectURL(url),30000);
+    if(!isMp4)alert('متصفح هاتفك لا يدعم MP4 عبر MediaRecorder؛ تم تصدير WebM بدلاً منه. يمكنك تحويله لاحقاً إلى MP4.');
+  }catch(e){try{rec.stop();}catch(_){}alert('تعذر تصدير الفيديو: '+e.message);}
+  finally{S.cur=old;refresh();}
+}
+
+/* GIF89a encoder: indexed 3-3-2 palette + LZW, fully local/offline */
+function gifPalette(){
+  const a=[];for(let i=0;i<256;i++){const r=((i>>5)&7)*255/7,g=((i>>2)&7)*255/7,b=(i&3)*255/3;a.push(Math.round(r),Math.round(g),Math.round(b));}return a;
+}
+function gifLzw(indices){
+  const min=8,clear=1<<min,end=clear+1;let codeSize=min+1,next=end+1;
+  let dict=new Map();const codes=[];
+  const reset=()=>{dict=new Map();codeSize=min+1;next=end+1;};
+  codes.push(clear);let prefix=indices[0]||0;
+  for(let i=1;i<indices.length;i++){
+    const k=indices[i],key=(prefix<<8)|k;
+    if(dict.has(key)){prefix=dict.get(key);continue;}
+    codes.push(prefix);
+    if(next<4096){dict.set(key,next++);if(next===(1<<codeSize)&&codeSize<12)codeSize++;}
+    else{codes.push(clear);reset();}
+    prefix=k;
+  }
+  codes.push(prefix,end);
+  let bits=0,bitCount=0,bytes=[];
+  // Recompute variable code width while emitting based on dictionary growth.
+  reset();bits=0;bitCount=0;bytes=[];
+  const emit=code=>{bits|=code<<bitCount;bitCount+=codeSize;while(bitCount>=8){bytes.push(bits&255);bits>>=8;bitCount-=8;}};
+  emit(clear);prefix=indices[0]||0;
+  for(let i=1;i<indices.length;i++){
+    const k=indices[i],key=(prefix<<8)|k;
+    if(dict.has(key)){prefix=dict.get(key);continue;}
+    emit(prefix);
+    if(next<4096){dict.set(key,next++);if(next===(1<<codeSize)&&codeSize<12)codeSize++;}
+    else{emit(clear);reset();}
+    prefix=k;
+  }
+  emit(prefix);emit(end);if(bitCount)bytes.push(bits&255);
+  const blocks=[];for(let i=0;i<bytes.length;i+=255){const part=bytes.slice(i,i+255);blocks.push(part.length,...part);}blocks.push(0);return blocks;
+}
+async function exportGIF(){
+  if(!S)return;
+  if(S.w*S.h*S.frameCount>18000000){if(!confirm('التصدير قد يحتاج ذاكرة كبيرة. هل تريد المتابعة؟'))return;}
+  const old=S.cur,bytes=[],push=(...v)=>bytes.push(...v),word=n=>push(n&255,(n>>8)&255);
+  const ascii=t=>push(...Array.from(t).map(c=>c.charCodeAt(0)));
+  try{
+    ascii('GIF89a');word(S.w);word(S.h);push(0xF7,0,0);push(...gifPalette());
+    push(0x21,0xFF,0x0B);ascii('NETSCAPE2.0');push(3,1,0,0,0);
+    const canvas=document.createElement('canvas');canvas.width=S.w;canvas.height=S.h;const c=canvas.getContext('2d',{willReadFrequently:true});
+    for(let f=0;f<S.frameCount;f++){
+      renderFrame(c,f,{onion:false});const data=c.getImageData(0,0,S.w,S.h).data,idx=new Uint8Array(S.w*S.h);
+      for(let i=0,j=0;i<data.length;i+=4,j++){idx[j]=((data[i]>>5)<<5)|((data[i+1]>>5)<<2)|(data[i+2]>>6);}
+      push(0x21,0xF9,4,0);word(Math.max(2,Math.round(100/S.fps)));push(0,0);
+      push(0x2C);word(0);word(0);word(S.w);word(S.h);push(0);
+      push(8,...gifLzw(idx));
+      if(f%4===0){$('#tweenStatus').textContent=`جارٍ تجهيز GIF: ${f+1}/${S.frameCount}`;await new Promise(r=>setTimeout(r,0));}
+    }
+    push(0x3B);
+    const blob=new Blob([new Uint8Array(bytes)],{type:'image/gif'}),url=URL.createObjectURL(blob);
+    const a=document.createElement('a');a.href=url;a.download=(S.name||'animation')+'.gif';a.click();setTimeout(()=>URL.revokeObjectURL(url),30000);
+    $('#tweenStatus').textContent='تم تصدير GIF بنجاح.';
+  }catch(e){alert('تعذر تصدير GIF: '+e.message);}
+  finally{S.cur=old;refresh();}
 }
 $('#importProject').addEventListener('click',()=>$('#projectFile').click());
 $('#projectFile').addEventListener('change',async e=>{const f=e.target.files[0];if(!f)return;try{const o=JSON.parse(await f.text());if(!o.layers||!Array.isArray(o.layers)||!o.frameCount)throw new Error('ملف مشروع غير صالح');if(!Array.isArray(o.tweens))o.tweens=[];const id=Date.now().toString(36);o.id=id;o.name=(o.name||'مشروع مستورد')+' - نسخة';localStorage.setItem('fs-p-'+id,JSON.stringify(o));const u=curUser();u.projects.push({id,name:o.name,updated:Date.now()});writeDb();openProject(id);}catch(err){alert('تعذر استيراد المشروع: '+err.message);}e.target.value='';});
@@ -915,12 +1056,30 @@ function setSheet(key) {
   sheetOpen = key;
   document.querySelectorAll('[data-panel]').forEach(p => { p.hidden = p.dataset.panel !== key; });
   $('#sheet').hidden = !key;
+  if(key==='palette' && S) renderPalette();
   document.querySelectorAll('[data-sheet]').forEach(b => b.classList.toggle('on', b.dataset.sheet === key));
   fit();
 }
 document.querySelectorAll('[data-sheet]').forEach(b => b.addEventListener('click', () => {
   setSheet(sheetOpen === b.dataset.sheet ? null : b.dataset.sheet);
 }));
+
+
+/* ---------- color palette ---------- */
+const defaultPalette=['#111827','#374151','#6b7280','#d1d5db','#ffffff','#ef4444','#f97316','#f59e0b','#eab308','#84cc16','#22c55e','#10b981','#14b8a6','#06b6d4','#0ea5e9','#3b82f6','#6366f1','#8b5cf6','#a855f7','#d946ef','#ec4899','#f43f5e','#7c2d12','#92400e','#14532d','#164e63','#1e3a8a','#312e81','#581c87','#831843'];
+function paletteColors(){if(!S.palette)S.palette=defaultPalette.slice();return S.palette;}
+function renderPalette(){
+ const colors=paletteColors(),grid=$('#paletteGrid');if(!grid)return;
+ grid.innerHTML=colors.map((c,i)=>`<button class="swatch${c.toLowerCase()===S.color.toLowerCase()?' active':''}" data-palette-color="${c}" style="background:${c}" aria-label="لون ${i+1}" title="${c}"></button>`).join('');
+ $('#paletteCustom').value=S.color;
+}
+$('#paletteGrid').addEventListener('click',e=>{const b=e.target.closest('[data-palette-color]');if(!b||!S)return;S.color=b.dataset.paletteColor;$('#color').value=S.color;renderPalette();scheduleSave();});
+$('#paletteCustom').addEventListener('input',e=>{if(!S)return;S.color=e.target.value;$('#color').value=S.color;renderPalette();scheduleSave();});
+$('#addPaletteColor').addEventListener('click',()=>{if(!S)return;const c=$('#paletteCustom').value;if(!paletteColors().includes(c))S.palette.push(c);S.color=c;$('#color').value=c;renderPalette();scheduleSave();});
+$('#openMotion').addEventListener('click',()=>{$('#motionModal').hidden=false;const t=tweenById();if(t)fillTweenForm(t);});
+$('#closeMotion').addEventListener('click',()=>$('#motionModal').hidden=true);
+$('#closeMotion2').addEventListener('click',()=>$('#motionModal').hidden=true);
+$('#motionModal').addEventListener('click',e=>{if(e.target.id==='motionModal')$('#motionModal').hidden=true;});
 
 /* ---------- UI sync ---------- */
 function updateTools() {
@@ -939,6 +1098,7 @@ function updateInfo() {
 }
 function refresh() {
   buildTl();
+  if(S && sheetOpen==='palette') renderPalette();
   render();
   updateInfo();
   updateTools();

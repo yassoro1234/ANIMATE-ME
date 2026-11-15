@@ -1,18 +1,29 @@
-# Frame Studio 2.1 — Animation Engine Update
+# Frame Studio 2.2
 
-## Added in this build
-- Per-shape tween clips with frame range, X/Y translation, rotation, scale and opacity interpolation.
-- Cubic Bezier timing interpolation using the Graph Editor curve.
-- Graph curve can be saved globally or on the selected tween.
-- Tween editing, deletion and jump-to-start/end controls.
-- WebM animation export using MediaRecorder (browser support required).
-- Project JSON backup and import.
-- Existing frame-by-frame drawing and projects are retained; older projects are migrated with empty tween lists.
+واجهة منظمة لمحرر رسوم متحركة ثنائي الأبعاد، مبنية على مصدر Frame Studio 2.1.
 
-## Limitations / next engineering work
-- A tween targets the selected shape index on one layer. Editing/reordering shapes or inserting frames can require updating tween targets/ranges.
-- MP4 and GIF encoding are not included; this build exports WebM and PNG.
-- Existing project storage remains localStorage; IndexedDB migration and robust quota/error handling are still needed.
-- This is a web source package, not a signed APK. Build via the included GitHub Actions workflow.
+## ما تغير في 2.2
+- إعادة تنظيم لوحة الأدوات على الهاتف: كل وظيفة رئيسية أصبحت بطاقة/أيقونة مستقلة بدلاً من عرض جميع الحقول في لوحة واحدة طويلة.
+- زر رجوع واضح إلى صفحة المشاريع، وأزرار تراجع/إعادة بأيقونات.
+- نافذة مستقلة لخصائص الحركة، ونافذة مستقلة لـ Graph Editor.
+- لوحة ألوان Palette مع ألوان جاهزة، اختيار لون مخصص، وإضافة الألوان المفضلة إلى اللوحة.
+- شاشة تصدير منظمة: PNG للإطار، PNG لشريط الإطارات، GIF، فيديو، ونسخة مشروع JSON واستيرادها.
+- تصدير GIF محلي داخل التطبيق باستخدام لوحة ألوان 3-3-2 وضغط LZW، دون الاعتماد على خدمة خارجية.
+- تصدير الفيديو يحاول MP4 أولاً إذا كان MediaRecorder في المتصفح يدعمه؛ وإلا يصدر WebM ويخبر المستخدم بصراحة.
+- تحديث Service Worker cache إلى v2.2 لتفادي بقاء واجهة v2.1 مخزنة.
 
-Open `index.html` through localhost or HTTPS. For APK build, push the folder to GitHub and run the Build APK workflow.
+## حدود يجب معرفتها
+- دعم MP4 يعتمد على المتصفح/إصدار Android. بعض المتصفحات لا توفر MP4 عبر MediaRecorder، وفي هذه الحالة يكون الناتج WebM.
+- GIF يستخدم لوحة ألوان 256 لوناً (3-3-2)، لذلك قد تختلف الألوان الدقيقة قليلاً عن PNG.
+- لم يتم بعد تحويل التخزين إلى IndexedDB؛ المشاريع ما زالت تعتمد على localStorage، لذلك لا تحفظ مشاريع ضخمة جداً قبل اختبارها.
+- لم يتم بناء APK داخل هذه البيئة أو اختباره فعلياً على هاتف Android. ملفات المصدر وWorkflow لبناء APK موجودة.
+- لا تزال هناك حاجة لاختبار تصدير GIF على متصفحات متعددة قبل اعتباره إصداراً نهائياً.
+
+## بناء APK عبر GitHub Actions
+1. فك ضغط المشروع وارفع محتوياته إلى مستودع GitHub.
+2. افتح تبويب Actions.
+3. شغّل workflow باسم Build APK أو ادفع commit إلى فرع main.
+4. نزّل Artifact باسم `frame-studio-apk`.
+
+## التشغيل
+افتح `index.html` عبر localhost أو HTTPS، وليس عبر `file://` إذا كانت وظائف التخزين الآمن مطلوبة.

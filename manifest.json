@@ -1,5 +1,5 @@
 {
-  "name": "Frame Studio",
+  "name": "Frame Studio 2.2",
   "short_name": "Frame Studio",
   "description": "استوديو رسوم متحركة 2D للهاتف",
   "start_url": "./",
@@ -11,7 +11,17 @@
   "lang": "ar",
   "dir": "rtl",
   "icons": [
-    { "src": "icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any" },
-    { "src": "icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
+    {
+      "src": "icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable"
+    }
   ]
 }
