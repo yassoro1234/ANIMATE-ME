@@ -353,7 +353,7 @@ canvas{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);backgro
         <div style="display:flex;align-items:center;gap:8px"><span id="exportProgressText" style="flex:1;color:var(--muted);font-size:12px">جارٍ التصدير...</span><button id="cancelExport" type="button">إلغاء</button></div>
       </div>
       <input id="projectFile" type="file" accept="application/json,.json" hidden>
-      <p class="export-note">GIF محلي. الفيديو يحاول MP4 ثم WebM. حدد نطاق الإطارات وFPS قبل التصدير.</p>
+      <p class="export-note">GIF محلي. الفيديو MP4 (H.264) عبر المتصفح، وإن تعذر يُصدَّر WebM. حدد نطاق الإطارات وFPS قبل التصدير.</p>
     </div>
   </section>
 
@@ -420,6 +420,7 @@ canvas{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);backgro
   </section>
 </div>
 
+<script src="mp4mux.js"></script>
 <script>
 const $ = s => document.querySelector(s);
 const clamp = (v, a, b) => Math.max(a, Math.min(b, v));
@@ -1495,7 +1496,82 @@ async function exportPNGSequence() {
   }
 }
 
+/* ---------- MP4 export (WebCodecs H.264 + local muxer) ---------- */
+async function exportMP4Native() {
+  if (!('VideoEncoder' in window) || !('VideoFrame' in window) || !window.Mp4Mux) return false;
+  const { from, to, fps } = getExportRange();
+  const W = S.w & ~1, H = S.h & ~1;
+  const bitrate = Math.round(Math.min(12e6, Math.max(2e6, W * H * fps * 0.12)));
+  let cfg = null;
+  for (const codec of ['avc1.42001f', 'avc1.420028', 'avc1.42002a']) {
+    const c = { codec, width: W, height: H, bitrate, framerate: fps, avc: { format: 'avc' } };
+    try {
+      const r = await VideoEncoder.isConfigSupported(c);
+      if (r.supported) { cfg = c; break; }
+    } catch (e) { /* try the next profile */ }
+  }
+  if (!cfg) return false;
+
+  const total = to - from + 1;
+  const samples = [];
+  let avcC = null;
+  let encError = null;
+  const enc = new VideoEncoder({
+    output(chunk, meta) {
+      const desc = meta && meta.decoderConfig && meta.decoderConfig.description;
+      if (desc && !avcC) avcC = new Uint8Array(desc.slice(0));
+      const data = new Uint8Array(chunk.byteLength);
+      chunk.copyTo(data);
+      samples.push({ data, key: chunk.type === 'key' });
+    },
+    error(e) { encError = e; }
+  });
+  const full = document.createElement('canvas');
+  full.width = S.w; full.height = S.h;
+  const fc = full.getContext('2d');
+  const out = document.createElement('canvas');
+  out.width = W; out.height = H;
+  const oc = out.getContext('2d');
+  const frameUs = 1e6 / fps;
+  exportCancelled = false;
+  showExportProgress(true, 'تصدير MP4...', 0);
+  try {
+    enc.configure(cfg);
+    for (let i = 0; i < total; i++) {
+      if (exportCancelled || encError) break;
+      renderFrame(fc, from + i, { onion: false });
+      oc.drawImage(full, 0, 0);
+      const vf = new VideoFrame(out, { timestamp: Math.round(i * frameUs), duration: Math.round(frameUs) });
+      enc.encode(vf, { keyFrame: i % (fps * 2) === 0 });
+      vf.close();
+      while (enc.encodeQueueSize > 3) await new Promise(r => setTimeout(r, 4));
+      showExportProgress(true, `MP4 ${i + 1}/${total}`, (i + 1) / total);
+      await new Promise(r => setTimeout(r, 0));
+    }
+    if (!exportCancelled) {
+      await enc.flush();
+      if (encError) throw encError;
+      if (!avcC) throw new Error('encoder returned no H.264 configuration');
+      const bytes = window.Mp4Mux.build({ width: W, height: H, fps, avcC, samples });
+      const blob = new Blob([bytes], { type: 'video/mp4' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = (S.name || 'animation') + '.mp4';
+      a.click();
+      setTimeout(() => URL.revokeObjectURL(url), 30000);
+    }
+  } catch (e) {
+    alert('تعذر تصدير MP4: ' + (e && e.message ? e.message : e));
+  } finally {
+    try { enc.close(); } catch (e) {}
+    showExportProgress(false);
+  }
+  return true;
+}
+
 async function exportVideo(){
+  if (await exportMP4Native()) return;
   if(!S)return;
   if(!window.MediaRecorder){alert('تسجيل الفيديو غير مدعوم في هذا المتصفح. جرّب Chrome حديثاً.');return;}
   const { from, to, fps } = getExportRange();
