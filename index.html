@@ -60,7 +60,7 @@ input[type=text],input[type=password]{background:var(--panel2);border:1px solid 
 
 /* ---------- views ---------- */
 .view{position:absolute;inset:0;box-sizing:border-box;display:flex;flex-direction:column;gap:8px;padding-top:8px;padding-bottom:8px;padding-left:max(12px,env(safe-area-inset-left,0px));padding-right:max(12px,env(safe-area-inset-right,0px));max-width:1100px;margin:0 auto;min-width:0}
-#auth{justify-content:center;align-items:stretch}
+#auth{display:none!important;justify-content:center;align-items:stretch}
 .auth-card{background:var(--panel);border:1px solid var(--line);border-radius:20px;padding:22px 18px;display:flex;flex-direction:column;gap:12px;animation:rise .6s .1s both}
 .auth-card.shake{animation:shake .45s}
 .auth-card .logo-s{width:72px;height:72px;align-self:center}
@@ -186,7 +186,7 @@ canvas{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);backgro
 .audio-item input[type=number]{width:64px;background:var(--bg);border:1px solid var(--line);border-radius:8px;color:var(--fg);padding:6px}
 @media(max-width:380px){.tool-grid{grid-template-columns:repeat(3,minmax(0,1fr));gap:6px}.tool-tile{font-size:11px!important;min-height:68px!important}.palette-grid{grid-template-columns:repeat(7,minmax(0,1fr))}}
 
-</style>
+.settings-modal{position:fixed;inset:0;z-index:80;background:rgba(0,0,0,.68);display:flex;align-items:center;justify-content:center;padding:18px;box-sizing:border-box}.settings-card{width:min(420px,100%);background:var(--panel);border:1px solid var(--line);border-radius:20px;padding:18px;display:flex;flex-direction:column;gap:14px;box-shadow:0 20px 60px #0008}.settings-head{display:flex;align-items:center;justify-content:space-between;font-size:18px}.settings-label{color:var(--muted)}.settings-card select{width:100%;padding:12px;border-radius:10px;background:var(--panel2);color:var(--fg);border:1px solid var(--line);font:inherit}#tl .playhead-line{display:none!important}#tl [data-f].col{background:rgba(255,122,61,.10)!important;box-shadow:inset 0 -2px var(--accent)}</style>
 
 <!-- Splash -->
 <div id="splash">
@@ -235,13 +235,14 @@ canvas{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);backgro
 <section id="home" class="view" hidden>
   <header class="top">
     <div class="brand">مشاريعي</div>
-    <button id="logout">خروج</button>
+    <button id="settingsBtn" aria-label="الإعدادات" title="الإعدادات">⚙</button>
   </header>
   <div class="hello" id="hello"></div>
   <button class="primary big" id="newProj">+ مشروع جديد</button>
   <div id="projList" class="list"></div>
 </section>
 
+<section id="settingsModal" class="settings-modal" hidden><div class="settings-card"><div class="settings-head"><strong id="settingsTitle">الإعدادات</strong><button id="closeSettings">✕</button></div><label class="settings-label" for="languageSelect" id="languageLabel">لغة التطبيق</label><select id="languageSelect"><option value="ar">العربية</option><option value="en">English</option></select><p class="hint" id="settingsHint">يتم حفظ اختيار اللغة على هذا الجهاز.</p></div></section>
 <!-- Editor -->
 <section id="editor" class="view" hidden>
   <header class="top">
@@ -276,7 +277,7 @@ canvas{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);backgro
       <button data-tool="brush">فرشاة</button>
       <button data-tool="erase">ممحاة</button>
       <button data-tool="text">نص</button>
-      <button id="importImageBtn">استيراد صورة</button>
+      <button id="importImageBtn">استيراد صورة</button><span class="hint">بعد الاستيراد حدّد الصورة ثم أضف مفاتيح الحركة واستعمل Graph Editor لتنعيم الحركة.</span>
       <input type="color" id="color" aria-label="اللون">
       <input type="range" id="size" min="1" max="60" aria-label="الحجم">
       <button id="delsel" data-act="delSel" disabled>حذف المحدد</button>
@@ -353,7 +354,7 @@ canvas{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);backgro
         <div style="display:flex;align-items:center;gap:8px"><span id="exportProgressText" style="flex:1;color:var(--muted);font-size:12px">جارٍ التصدير...</span><button id="cancelExport" type="button">إلغاء</button></div>
       </div>
       <input id="projectFile" type="file" accept="application/json,.json" hidden>
-      <p class="export-note">GIF محلي. الفيديو MP4 (H.264) عبر المتصفح، وإن تعذر يُصدَّر WebM. حدد نطاق الإطارات وFPS قبل التصدير.</p>
+      <p class="export-note">GIF محلي. الفيديو يحاول MP4 ثم WebM. حدد نطاق الإطارات وFPS قبل التصدير.</p>
     </div>
   </section>
 
@@ -420,8 +421,6 @@ canvas{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);backgro
   </section>
 </div>
 
-<script src="mp4mux.js"></script>
-<script src="i18n.js"></script>
 <script>
 const $ = s => document.querySelector(s);
 const clamp = (v, a, b) => Math.max(a, Math.min(b, v));
@@ -601,7 +600,7 @@ $('#authForm').addEventListener('submit', async e => {
     fail('تعذّر التحقق. افتح التطبيق عبر رابط https');
   }
 });
-$('#logout').addEventListener('click', () => {
+$('#logout')?.addEventListener('click', () => {
   if (playing) stop();
   if (S) saveProject();
   S = null;
@@ -609,6 +608,24 @@ $('#logout').addEventListener('click', () => {
   writeDb();
   showView('auth');
 });
+
+// Settings and persistent Arabic/English language
+const LANG_KEY='frameStudioLanguage';
+const translations={'مشاريعي':'My Projects','مشروع جديد':'New Project','الإعدادات':'Settings','لغة التطبيق':'App language','يتم حفظ اختيار اللغة على هذا الجهاز.':'Your language choice is saved on this device.','تشغيل':'Play','تراجع':'Undo','إعادة':'Redo','استيراد صورة':'Import Image','فرشاة':'Brush','ممحاة':'Eraser','تحديد':'Select','نص':'Text','خط':'Line','مستطيل':'Rectangle','دائرة':'Ellipse','طبقات':'Layers','إطارات':'Frames','ألوان':'Colors','حركة':'Motion','خصائص الحركة':'Motion Properties','إنشاء حركة':'Create Tween','حذف الحركة':'Delete Tween','مفتاح هنا':'Add Keyframe','حذف مفتاح':'Delete Keyframe','+ إطار':'+ Frame','نسخ':'Duplicate','حذف':'Delete'};
+const langOriginal=new WeakMap();
+function applyLanguage(lang){
+ document.documentElement.lang=lang;document.documentElement.dir=lang==='ar'?'rtl':'ltr';document.body.dir=lang==='ar'?'rtl':'ltr';
+ document.querySelectorAll('#home .brand,#newProj,#settingsTitle,#languageLabel,#settingsHint,#play,#undo,#redo,[data-tool],[data-act],.tool-tile span').forEach(el=>{
+  if(!langOriginal.has(el))langOriginal.set(el,el.textContent);
+  const ar=langOriginal.get(el).trim();el.textContent=lang==='ar'?ar:(translations[ar]||ar);
+ });
+ localStorage.setItem(LANG_KEY,lang);
+}
+$('#settingsBtn').addEventListener('click',()=>{$('#languageSelect').value=localStorage.getItem(LANG_KEY)||'ar';$('#settingsModal').hidden=false;});
+$('#closeSettings').addEventListener('click',()=>$('#settingsModal').hidden=true);
+$('#settingsModal').addEventListener('click',e=>{if(e.target.id==='settingsModal')$('#settingsModal').hidden=true;});
+$('#languageSelect').addEventListener('change',e=>applyLanguage(e.target.value));
+applyLanguage(localStorage.getItem(LANG_KEY)||'ar');
 
 /* ---------- projects ---------- */
 function goHome() {
@@ -1312,24 +1329,12 @@ function buildTl() {
   }
   tl.innerHTML = h;
 
-  // Playhead line
-  let line = tl.querySelector('.playhead-line');
-  if (!line) {
-    line = document.createElement('div');
-    line.className = 'playhead-line';
-    tl.appendChild(line);
-  }
-  const labW = 128;
-  line.style.left = (labW + S.cur * cellW + cellW / 2) + 'px';
+  // Current frame is indicated by a subtle cell highlight.
 }
 function paintCursor() {
   if (!S) return;
   document.querySelectorAll('#tl [data-f]').forEach(el => el.classList.toggle('col', +el.dataset.f === S.cur));
-  const line = tl.querySelector('.playhead-line');
-  if (line) {
-    const cellW = Math.round(28 * tlZoom);
-    line.style.left = (128 + S.cur * cellW + cellW / 2) + 'px';
-  }
+
 }
 tl.addEventListener('click', e => {
   if (!S || playing) return;
@@ -1497,82 +1502,7 @@ async function exportPNGSequence() {
   }
 }
 
-/* ---------- MP4 export (WebCodecs H.264 + local muxer) ---------- */
-async function exportMP4Native() {
-  if (!('VideoEncoder' in window) || !('VideoFrame' in window) || !window.Mp4Mux) return false;
-  const { from, to, fps } = getExportRange();
-  const W = S.w & ~1, H = S.h & ~1;
-  const bitrate = Math.round(Math.min(12e6, Math.max(2e6, W * H * fps * 0.12)));
-  let cfg = null;
-  for (const codec of ['avc1.42001f', 'avc1.420028', 'avc1.42002a']) {
-    const c = { codec, width: W, height: H, bitrate, framerate: fps, avc: { format: 'avc' } };
-    try {
-      const r = await VideoEncoder.isConfigSupported(c);
-      if (r.supported) { cfg = c; break; }
-    } catch (e) { /* try the next profile */ }
-  }
-  if (!cfg) return false;
-
-  const total = to - from + 1;
-  const samples = [];
-  let avcC = null;
-  let encError = null;
-  const enc = new VideoEncoder({
-    output(chunk, meta) {
-      const desc = meta && meta.decoderConfig && meta.decoderConfig.description;
-      if (desc && !avcC) avcC = new Uint8Array(desc.slice(0));
-      const data = new Uint8Array(chunk.byteLength);
-      chunk.copyTo(data);
-      samples.push({ data, key: chunk.type === 'key' });
-    },
-    error(e) { encError = e; }
-  });
-  const full = document.createElement('canvas');
-  full.width = S.w; full.height = S.h;
-  const fc = full.getContext('2d');
-  const out = document.createElement('canvas');
-  out.width = W; out.height = H;
-  const oc = out.getContext('2d');
-  const frameUs = 1e6 / fps;
-  exportCancelled = false;
-  showExportProgress(true, 'تصدير MP4...', 0);
-  try {
-    enc.configure(cfg);
-    for (let i = 0; i < total; i++) {
-      if (exportCancelled || encError) break;
-      renderFrame(fc, from + i, { onion: false });
-      oc.drawImage(full, 0, 0);
-      const vf = new VideoFrame(out, { timestamp: Math.round(i * frameUs), duration: Math.round(frameUs) });
-      enc.encode(vf, { keyFrame: i % (fps * 2) === 0 });
-      vf.close();
-      while (enc.encodeQueueSize > 3) await new Promise(r => setTimeout(r, 4));
-      showExportProgress(true, `MP4 ${i + 1}/${total}`, (i + 1) / total);
-      await new Promise(r => setTimeout(r, 0));
-    }
-    if (!exportCancelled) {
-      await enc.flush();
-      if (encError) throw encError;
-      if (!avcC) throw new Error('encoder returned no H.264 configuration');
-      const bytes = window.Mp4Mux.build({ width: W, height: H, fps, avcC, samples });
-      const blob = new Blob([bytes], { type: 'video/mp4' });
-      const url = URL.createObjectURL(blob);
-      const a = document.createElement('a');
-      a.href = url;
-      a.download = (S.name || 'animation') + '.mp4';
-      a.click();
-      setTimeout(() => URL.revokeObjectURL(url), 30000);
-    }
-  } catch (e) {
-    alert('تعذر تصدير MP4: ' + (e && e.message ? e.message : e));
-  } finally {
-    try { enc.close(); } catch (e) {}
-    showExportProgress(false);
-  }
-  return true;
-}
-
 async function exportVideo(){
-  if (await exportMP4Native()) return;
   if(!S)return;
   if(!window.MediaRecorder){alert('تسجيل الفيديو غير مدعوم في هذا المتصفح. جرّب Chrome حديثاً.');return;}
   const { from, to, fps } = getExportRange();
@@ -2096,7 +2026,7 @@ setTimeout(() => {
   $('#splash').classList.add('out');
   setTimeout(() => {
     $('#splash').hidden = true;
-    if (curUser()) goHome(); else showView('auth');
+    if (!curUser()) { const existing=Object.keys(DBX.users||{})[0]; const guest=existing||'local_guest'; if(!DBX.users[guest]) DBX.users[guest]={salt:'',hash:'',projects:[]}; DBX.session=guest; writeDb(); } goHome();
   }, 600);
 }, 2600);
 
