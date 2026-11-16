@@ -1,5 +1,5 @@
-const CACHE = 'frame-studio-v2-4';
-const SHELL = ['./', 'index.html', 'manifest.json', 'icon-512.png', 'mp4mux.js'];
+const CACHE = 'frame-studio-v2-5';
+const SHELL = ['./', 'index.html', 'manifest.json', 'icon-512.png', 'mp4mux.js', 'i18n.js'];
 
 self.addEventListener('install', e => {
   e.waitUntil(caches.open(CACHE).then(c => c.addAll(SHELL)).then(() => self.skipWaiting()));
