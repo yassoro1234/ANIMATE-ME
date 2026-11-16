@@ -1,5 +1,5 @@
-<title>Frame Studio 2.2</title>
-<meta name="claude:viewport-fit-sides" content="cover">
+<title>Frame Studio 2.3</title>
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
 <meta name="theme-color" content="#0d0d11">
 <link rel="manifest" href="manifest.json">
 <link rel="icon" href="icon-512.png">
@@ -7,18 +7,32 @@
 <style>
 :root{--bg:#0d0d11;--panel:#16161c;--panel2:#20202a;--line:#2c2c38;--fg:#eeeef4;--muted:#8d8da0;--accent:#ff7a3d;--accent2:#ffa86b;--accent-ink:#1d0c02;color-scheme:dark}
 html,body{height:100%;margin:0}
-body{background:var(--bg);color:var(--fg);font-family:"Tajawal",system-ui,-apple-system,sans-serif;font-size:14px;overflow:hidden}
+body{background:var(--bg);color:var(--fg);font-family:"Tajawal",system-ui,-apple-system,sans-serif;font-size:14px;overflow:hidden;-webkit-tap-highlight-color:transparent;touch-action:manipulation}
 :focus-visible{outline:2px solid var(--accent);outline-offset:2px}
 [hidden]{display:none!important}
 button,input{font:inherit}
-button{color:var(--fg);background:var(--panel2);border:1px solid var(--line);border-radius:10px;min-height:38px;min-width:38px;padding:0 10px;cursor:pointer;flex:0 0 auto;transition:transform .15s}
-button:active{transform:scale(.96)}
-button:disabled{opacity:.35}
+button{
+  color:var(--fg);background:var(--panel2);border:1px solid var(--line);border-radius:10px;
+  min-height:38px;min-width:38px;padding:0 10px;cursor:pointer;flex:0 0 auto;
+  transition:transform .12s cubic-bezier(.2,.8,.2,1), background .15s, border-color .15s, box-shadow .15s;
+  -webkit-tap-highlight-color:transparent;user-select:none;
+}
+button:active{transform:scale(.92);box-shadow:0 0 0 2px rgba(255,122,61,.35)}
+button:disabled{opacity:.35;pointer-events:none}
 button.on,button.primary{background:var(--accent);color:var(--accent-ink);border-color:var(--accent)}
 button.primary{font-weight:700}
 button.big{min-height:50px;font-size:16px;width:100%}
-svg.i{width:22px;height:22px;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
+button.press-pulse{animation:btnPulse .28s ease}
+@keyframes btnPulse{
+  0%{transform:scale(1)}
+  40%{transform:scale(.90);box-shadow:0 0 0 3px rgba(255,122,61,.45)}
+  100%{transform:scale(1);box-shadow:none}
+}
+svg.i{width:22px;height:22px;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round;pointer-events:none}
 input[type=text],input[type=password]{background:var(--panel2);border:1px solid var(--line);border-radius:12px;color:var(--fg);padding:12px;font-size:15px;width:100%;box-sizing:border-box}
+.save-dot{width:8px;height:8px;border-radius:50%;background:#4ade80;display:inline-block;margin-inline-start:6px;opacity:.85;transition:background .3s}
+.save-dot.dirty{background:#fbbf24}
+.save-dot.err{background:#f87171}
 
 /* ---------- tween editor ---------- */
 .tween-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:7px;width:100%}
@@ -74,19 +88,29 @@ input[type=text],input[type=password]{background:var(--panel2);border:1px solid 
 .info{color:var(--muted);font-size:12px;font-variant-numeric:tabular-nums;padding:0 4px}
 .canvas-box{position:relative;flex:1 1 auto;min-height:0;width:100%}
 canvas{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);background:#fff;border-radius:12px;box-shadow:0 0 0 1px var(--line);touch-action:none;display:block}
-.timeline{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:6px;display:flex;flex-direction:column;flex:0 0 auto}
-.tl-scroll{overflow:auto;max-height:22vh;direction:ltr;border-radius:8px}
-.row{display:flex;width:max-content}
-.lab{position:sticky;left:0;z-index:2;background:var(--panel);width:120px;flex:0 0 120px;display:flex;align-items:center;gap:6px;padding:4px 6px;box-sizing:border-box;border-bottom:1px solid var(--line);direction:rtl;font-size:13px;min-height:36px}
-.lab.sel{color:var(--accent)}
-.lab .name{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-.eye{min-width:26px;min-height:26px;padding:0;border:none;background:none;font-size:14px}
-.cell{width:30px;flex:0 0 30px;height:36px;box-sizing:border-box;border-right:1px solid var(--line);border-bottom:1px solid var(--line);display:flex;align-items:center;justify-content:center;cursor:pointer;background:var(--panel)}
+.timeline{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:6px;display:flex;flex-direction:column;flex:0 0 auto;gap:4px}
+.tl-toolbar{display:flex;align-items:center;gap:6px;padding:0 2px;flex-wrap:wrap}
+.tl-toolbar .hint{font-size:11px;color:var(--muted);margin:0}
+.tl-toolbar button{min-height:30px;min-width:30px;padding:0 8px;font-size:12px}
+.tl-scroll{overflow:auto;max-height:24vh;direction:ltr;border-radius:8px;position:relative;-webkit-overflow-scrolling:touch}
+.row{display:flex;width:max-content;position:relative}
+.lab{position:sticky;left:0;z-index:3;background:var(--panel);width:128px;flex:0 0 128px;display:flex;align-items:center;gap:3px;padding:3px 5px;box-sizing:border-box;border-bottom:1px solid var(--line);direction:rtl;font-size:12px;min-height:34px}
+.lab.sel{color:var(--accent);background:linear-gradient(90deg,rgba(255,122,61,.12),transparent)}
+.lab .name{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;cursor:pointer}
+.lab.locked .name{opacity:.55}
+.eye,.lock-btn{min-width:24px;min-height:24px;padding:0;border:none;background:none;font-size:13px;color:var(--muted)}
+.lock-btn.locked{color:var(--accent)}
+.cell{width:var(--tl-cell,28px);flex:0 0 var(--tl-cell,28px);height:34px;box-sizing:border-box;border-right:1px solid var(--line);border-bottom:1px solid var(--line);display:flex;align-items:center;justify-content:center;cursor:pointer;background:var(--panel);position:relative}
 .cell.col{background:var(--panel2)}
-.cell.key::after{content:"";width:7px;height:7px;border-radius:50%;background:var(--muted)}
+.cell.key::after{content:"";width:6px;height:6px;border-radius:50%;background:var(--muted)}
 .cell.cur{box-shadow:inset 0 0 0 2px var(--accent)}
-.ruler .cell{height:26px;font-size:11px;color:var(--muted)}
-.ruler .cell.col{background:var(--accent);color:var(--accent-ink)}
+.cell.tween-range{background:rgba(255,122,61,.08)}
+.cell.tween-start::before,.cell.tween-end::before{content:"";position:absolute;top:4px;bottom:4px;width:2px;background:var(--accent);opacity:.7}
+.cell.tween-start::before{left:1px}
+.cell.tween-end::before{right:1px}
+.ruler .cell{height:24px;font-size:10px;color:var(--muted);font-variant-numeric:tabular-nums}
+.ruler .cell.col{background:var(--accent);color:var(--accent-ink);font-weight:700}
+.playhead-line{position:absolute;top:0;bottom:0;width:2px;background:var(--accent);pointer-events:none;z-index:4;opacity:.85;box-shadow:0 0 6px rgba(255,122,61,.5)}
 .sheet{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:8px;animation:rise .25s both}
 .panel{display:flex;flex-wrap:wrap;gap:6px;align-items:center}
 .panel label{display:flex;align-items:center;gap:8px;color:var(--muted)}
@@ -156,6 +180,10 @@ canvas{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);backgro
 .export-tile{min-height:86px!important;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px}
 .export-tile .i{color:var(--accent);width:26px;height:26px}
 .export-note{color:var(--muted);font-size:12px;line-height:1.6}
+.audio-list{display:flex;flex-direction:column;gap:8px;width:100%;max-height:28vh;overflow:auto}
+.audio-item{display:flex;flex-wrap:wrap;gap:6px;align-items:center;background:var(--panel2);border:1px solid var(--line);border-radius:12px;padding:8px}
+.audio-item .aname{flex:1;min-width:80px;font-size:13px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.audio-item input[type=number]{width:64px;background:var(--bg);border:1px solid var(--line);border-radius:8px;color:var(--fg);padding:6px}
 @media(max-width:380px){.tool-grid{grid-template-columns:repeat(3,minmax(0,1fr));gap:6px}.tool-tile{font-size:11px!important;min-height:68px!important}.palette-grid{grid-template-columns:repeat(7,minmax(0,1fr))}}
 
 </style>
@@ -219,6 +247,7 @@ canvas{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);backgro
   <header class="top">
     <button id="backBtn" aria-label="رجوع إلى المشاريع" title="رجوع"><svg class="i" viewBox="0 0 24 24"><path d="M15 18l-6-6 6-6"/></svg></button>
     <input type="text" id="projName" aria-label="اسم المشروع">
+    <span id="saveStatus" class="save-dot" title="محفوظ" aria-label="حالة الحفظ"></span>
     <button id="undo" aria-label="تراجع" title="تراجع"><svg class="i" viewBox="0 0 24 24"><path d="M9 14L4 9l5-5"/><path d="M4 9h10a6 6 0 010 12h-2"/></svg></button>
     <button id="redo" aria-label="إعادة" title="إعادة"><svg class="i" viewBox="0 0 24 24"><path d="M15 14l5-5-5-5"/><path d="M20 9H10a6 6 0 000 12h2"/></svg></button>
     <button id="play" class="primary">تشغيل</button>
@@ -230,7 +259,14 @@ canvas{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);backgro
       <div class="canvas-box" id="box"><canvas id="stage"></canvas></div>
     </section>
     <section class="timeline">
-      <div class="tl-scroll"><div id="tl"></div></div>
+      <div class="tl-toolbar">
+        <button id="tlZoomOut" title="تصغير الخط الزمني" aria-label="تصغير">−</button>
+        <button id="tlZoomIn" title="تكبير الخط الزمني" aria-label="تكبير">+</button>
+        <span class="hint" id="tlZoomLabel">100%</span>
+        <button data-act="addFrame" title="إضافة إطار">+ إطار</button>
+        <button data-act="dupFrame" title="نسخ الإطار">نسخ</button>
+      </div>
+      <div class="tl-scroll" id="tlScroll"><div id="tl"></div></div>
     </section>
   </main>
 
@@ -239,9 +275,12 @@ canvas{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);backgro
       <button data-tool="select">تحديد</button>
       <button data-tool="brush">فرشاة</button>
       <button data-tool="erase">ممحاة</button>
+      <button data-tool="text">نص</button>
+      <button id="importImageBtn">استيراد صورة</button>
       <input type="color" id="color" aria-label="اللون">
       <input type="range" id="size" min="1" max="60" aria-label="الحجم">
       <button id="delsel" data-act="delSel" disabled>حذف المحدد</button>
+      <input id="imageFile" type="file" accept="image/png,image/jpeg,image/webp,image/*" hidden>
     </div>
     <div class="panel" data-panel="shapes" hidden>
       <button data-tool="line">خط</button>
@@ -250,8 +289,12 @@ canvas{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);backgro
     </div>
     <div class="panel" data-panel="layers" hidden>
       <button data-act="addLayer">+ طبقة</button>
+      <button data-act="dupLayer">نسخ الطبقة</button>
       <button data-act="delLayer">حذف الطبقة</button>
-      <span class="hint">اضغط على ● بجانب اسم الطبقة لإخفائها أو إظهارها</span>
+      <button data-act="renameLayer">إعادة تسمية</button>
+      <button data-act="moveLayerUp">↑ أعلى</button>
+      <button data-act="moveLayerDown">↓ أسفل</button>
+      <span class="hint">● إظهار/إخفاء · 🔒 قفل الطبقة · اضغط الاسم مرتين لإعادة التسمية</span>
     </div>
     <div class="panel" data-panel="palette" hidden>
       <div class="palette-head"><input type="color" id="paletteCustom" aria-label="اختيار لون مخصص"><strong>لوحة الألوان</strong><button id="addPaletteColor">+ حفظ اللون</button></div>
@@ -273,21 +316,44 @@ canvas{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);backgro
         <button class="tool-tile" id="tweenToStart"><svg class="i" viewBox="0 0 24 24"><path d="M5 5v14M19 12H8m5-5l-5 5 5 5"/></svg><span>إطار البداية</span></button>
         <button class="tool-tile" id="tweenToEnd"><svg class="i" viewBox="0 0 24 24"><path d="M19 5v14M5 12h11m-5-5l5 5-5 5"/></svg><span>إطار النهاية</span></button>
       </div>
-      <div class="tween-status" id="tweenStatus">اختر رسماً ثم أنشئ حركة. خصائص الحركة ومنحنى Graph Editor منفصلان ومنظمان.</div>
+      <div class="tool-grid" style="margin-top:4px">
+        <button class="tool-tile" id="addKeyframeBtn"><svg class="i" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg><span>مفتاح هنا</span></button>
+        <button class="tool-tile" id="delKeyframeBtn"><svg class="i" viewBox="0 0 24 24"><path d="M5 12h14"/></svg><span>حذف مفتاح</span></button>
+      </div>
+      <div class="tween-status" id="tweenStatus">اختر عنصراً. استخدم «مفتاح هنا» لإضافة keyframe على الإطار الحالي لكل القنوات النشطة.</div>
       <label style="display:flex;align-items:center;gap:10px;color:var(--muted);width:100%">سرعة التشغيل <input id="fps" type="range" min="1" max="30" style="flex:1;accent-color:var(--accent)"></label>
     </div>
+    <div class="panel" data-panel="audio" hidden>
+      <button id="importAudioBtn" class="primary">+ استيراد صوت (MP3/WAV)</button>
+      <input id="audioFile" type="file" accept="audio/mpeg,audio/wav,audio/mp3,audio/*" hidden>
+      <label style="display:flex;align-items:center;gap:8px;width:100%;color:var(--muted)">مستوى الصوت
+        <input id="audioVolume" type="range" min="0" max="100" value="80" style="flex:1;accent-color:var(--accent)">
+      </label>
+      <div id="audioList" class="audio-list"></div>
+      <span class="hint">الصوت يتزامن مع التشغيل. اضبط إطار البداية لكل مقطع من القائمة.</span>
+    </div>
     <div class="panel" data-panel="export" hidden>
+      <div class="export-settings" style="display:flex;flex-wrap:wrap;gap:8px;width:100%;align-items:center;margin-bottom:6px">
+        <label style="color:var(--muted);font-size:12px">من <input id="expFrom" type="number" min="1" value="1" style="width:58px;background:var(--panel2);border:1px solid var(--line);border-radius:8px;color:var(--fg);padding:6px"></label>
+        <label style="color:var(--muted);font-size:12px">إلى <input id="expTo" type="number" min="1" value="12" style="width:58px;background:var(--panel2);border:1px solid var(--line);border-radius:8px;color:var(--fg);padding:6px"></label>
+        <label style="color:var(--muted);font-size:12px">FPS <input id="expFps" type="number" min="1" max="60" value="12" style="width:52px;background:var(--panel2);border:1px solid var(--line);border-radius:8px;color:var(--fg);padding:6px"></label>
+      </div>
       <div class="export-grid">
         <button class="export-tile" data-exp="frame"><svg class="i" viewBox="0 0 24 24"><path d="M4 4h16v16H4zM8 16l3-3 2 2 3-4 2 5"/></svg><span>صورة PNG</span></button>
         <button class="export-tile" data-exp="strip"><svg class="i" viewBox="0 0 24 24"><rect x="3" y="4" width="8" height="7" rx="1"/><rect x="13" y="4" width="8" height="7" rx="1"/><rect x="3" y="13" width="8" height="7" rx="1"/><rect x="13" y="13" width="8" height="7" rx="1"/></svg><span>شريط PNG</span></button>
+        <button class="export-tile" data-exp="sequence"><svg class="i" viewBox="0 0 24 24"><rect x="3" y="4" width="6" height="6" rx="1"/><rect x="11" y="4" width="6" height="6" rx="1"/><rect x="3" y="12" width="6" height="6" rx="1"/></svg><span>تسلسل PNG</span></button>
         <button class="export-tile" data-exp="gif"><svg class="i" viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="16" rx="2"/><path d="M8 10a3 3 0 103 3H8m8-3v6"/></svg><span>تصدير GIF</span></button>
         <button class="export-tile" data-exp="video"><svg class="i" viewBox="0 0 24 24"><rect x="3" y="5" width="13" height="14" rx="2"/><path d="M16 10l5-3v10l-5-3z"/></svg><span>تصدير فيديو</span></button>
         <button class="export-tile" data-exp="project"><svg class="i" viewBox="0 0 24 24"><path d="M12 3v12m-5-5l5 5 5-5M4 19h16"/></svg><span>نسخة المشروع</span></button>
         <button class="export-tile" id="importProject"><svg class="i" viewBox="0 0 24 24"><path d="M12 15V3m-5 5l5-5 5 5M4 19h16"/></svg><span>استيراد مشروع</span></button>
-        <button class="export-tile" data-exp="preview"><svg class="i" viewBox="0 0 24 24"><path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7-10-7-10-7z"/><circle cx="12" cy="12" r="3"/></svg><span>معاينة الإطارات</span></button>
+        <button class="export-tile" data-exp="preview"><svg class="i" viewBox="0 0 24 24"><path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7-10-7-10-7z"/><circle cx="12" cy="12" r="3"/></svg><span>معاينة</span></button>
+      </div>
+      <div id="exportProgress" class="export-progress" hidden style="width:100%;display:none;flex-direction:column;gap:6px;margin-top:8px">
+        <div style="height:8px;background:var(--panel2);border-radius:99px;overflow:hidden"><div id="exportBarFill" style="height:100%;width:0%;background:var(--accent);transition:width .15s"></div></div>
+        <div style="display:flex;align-items:center;gap:8px"><span id="exportProgressText" style="flex:1;color:var(--muted);font-size:12px">جارٍ التصدير...</span><button id="cancelExport" type="button">إلغاء</button></div>
       </div>
       <input id="projectFile" type="file" accept="application/json,.json" hidden>
-      <p class="export-note">GIF يتم ترميزه داخل التطبيق. الفيديو يحاول MP4 أولاً، وإذا لم يدعمه المتصفح يصدر WebM تلقائياً مع توضيح الصيغة.</p>
+      <p class="export-note">GIF محلي. الفيديو يحاول MP4 ثم WebM. حدد نطاق الإطارات وFPS قبل التصدير.</p>
     </div>
   </section>
 
@@ -298,6 +364,7 @@ canvas{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);backgro
     <button data-sheet="frames" aria-label="إطارات"><svg class="i" viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="16" rx="2"/><path d="M3 10h18M9 4v16"/></svg><span>إطارات</span></button>
     <button data-sheet="palette" aria-label="لوحة الألوان"><svg class="i" viewBox="0 0 24 24"><path d="M12 3a9 9 0 100 18h2a2 2 0 002-2 2 2 0 00-1-1.7 1.5 1.5 0 011-2.8H18a3 3 0 003-3 9 9 0 00-9-8.5z"/><circle cx="7.5" cy="10" r="1"/><circle cx="11" cy="7" r="1"/><circle cx="16" cy="8" r="1"/></svg><span>ألوان</span></button>
     <button data-sheet="motion" aria-label="حركة"><svg class="i" viewBox="0 0 24 24"><path d="M3 20c6 0 4-16 18-16"/></svg><span>حركة</span></button>
+    <button data-sheet="audio" aria-label="صوت"><svg class="i" viewBox="0 0 24 24"><path d="M4 10v4m3-6v8m3-10v12m3-8v4m3-6v8"/></svg><span>صوت</span></button>
     <button data-sheet="export" aria-label="تصدير"><svg class="i" viewBox="0 0 24 24"><path d="M12 3v12M7 10l5 5 5-5M4 19h16"/></svg><span>تصدير</span></button>
   </nav>
 </section>
@@ -310,23 +377,29 @@ canvas{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);backgro
 
 <div class="modal" id="motionModal" hidden>
   <section class="modal-card">
-    <header class="modal-head"><strong>خصائص الحركة</strong><button id="closeMotion" aria-label="إغلاق">✕</button></header>
+    <header class="modal-head"><strong>خصائص الحركة — قنوات مستقلة</strong><button id="closeMotion" aria-label="إغلاق">✕</button></header>
     <div class="motion-fields">
       <label>إطار البداية<input id="twStart" type="number" min="1" max="240" value="1"></label>
       <label>إطار النهاية<input id="twEnd" type="number" min="1" max="240" value="12"></label>
-      <label>موضع X البداية<input id="twX0" type="number" step="1" value="0"></label>
-      <label>موضع Y البداية<input id="twY0" type="number" step="1" value="0"></label>
-      <label>موضع X النهاية<input id="twX1" type="number" step="1" value="120"></label>
-      <label>موضع Y النهاية<input id="twY1" type="number" step="1" value="0"></label>
-      <label>الدوران البداية °<input id="twR0" type="number" step="1" value="0"></label>
-      <label>الدوران النهاية °<input id="twR1" type="number" step="1" value="0"></label>
-      <label>الحجم البداية %<input id="twS0" type="number" min="1" max="500" value="100"></label>
-      <label>الحجم النهاية %<input id="twS1" type="number" min="1" max="500" value="100"></label>
-      <label>الشفافية البداية %<input id="twO0" type="number" min="0" max="100" value="100"></label>
-      <label>الشفافية النهاية %<input id="twO1" type="number" min="0" max="100" value="100"></label>
+      <label>Position X من<input id="twX0" type="number" step="1" value="0"></label>
+      <label>Position X إلى<input id="twX1" type="number" step="1" value="120"></label>
+      <label>Position Y من<input id="twY0" type="number" step="1" value="0"></label>
+      <label>Position Y إلى<input id="twY1" type="number" step="1" value="0"></label>
+      <label>Rotation من °<input id="twR0" type="number" step="1" value="0"></label>
+      <label>Rotation إلى °<input id="twR1" type="number" step="1" value="0"></label>
+      <label>Scale X من %<input id="twSX0" type="number" min="1" max="500" value="100"></label>
+      <label>Scale X إلى %<input id="twSX1" type="number" min="1" max="500" value="100"></label>
+      <label>Scale Y من %<input id="twSY0" type="number" min="1" max="500" value="100"></label>
+      <label>Scale Y إلى %<input id="twSY1" type="number" min="1" max="500" value="100"></label>
+      <label>Opacity من %<input id="twO0" type="number" min="0" max="100" value="100"></label>
+      <label>Opacity إلى %<input id="twO1" type="number" min="0" max="100" value="100"></label>
     </div>
-    <div class="tween-actions"><button id="applyTween" class="primary">حفظ / تحديث الحركة</button><button id="closeMotion2">إغلاق</button></div>
-    <p class="export-note">حدد العنصر بأداة التحديد قبل إنشاء الحركة. كل القيم مستقلة عن لوحة الرسم.</p>
+    <div class="tween-actions">
+      <button id="applyTween" class="primary">حفظ / تحديث الحركة</button>
+      <button id="openGraphFromMotion">Graph Editor</button>
+      <button id="closeMotion2">إغلاق</button>
+    </div>
+    <p class="export-note">كل قناة (X, Y, Rotation, Scale X/Y, Opacity) مستقلة. المنحنى في Graph Editor يتحكم بتوقيت الحركة. حدد عنصراً بأداة التحديد أولاً.</p>
   </section>
 </div>
 
@@ -366,6 +439,121 @@ function rand() { return [...crypto.getRandomValues(new Uint8Array(16))].map(x =
 async function hashPw(pw, salt) {
   const b = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(salt + ':' + pw));
   return [...new Uint8Array(b)].map(x => x.toString(16).padStart(2, '0')).join('');
+}
+
+/* ---------- IndexedDB project storage (with localStorage fallback) ---------- */
+const IDB_NAME = 'frame-studio-db';
+const IDB_STORE = 'projects';
+let idb = null;
+let idbReady = null;
+
+function openIdb() {
+  if (idbReady) return idbReady;
+  idbReady = new Promise((resolve) => {
+    if (!window.indexedDB) { resolve(null); return; }
+    const req = indexedDB.open(IDB_NAME, 1);
+    req.onupgradeneeded = () => {
+      const db = req.result;
+      if (!db.objectStoreNames.contains(IDB_STORE)) {
+        db.createObjectStore(IDB_STORE, { keyPath: 'id' });
+      }
+    };
+    req.onsuccess = () => { idb = req.result; resolve(idb); };
+    req.onerror = () => { resolve(null); };
+  });
+  return idbReady;
+}
+
+async function idbPutProject(proj) {
+  const db = await openIdb();
+  if (!db) return false;
+  return new Promise((resolve) => {
+    try {
+      const tx = db.transaction(IDB_STORE, 'readwrite');
+      tx.objectStore(IDB_STORE).put(proj);
+      tx.oncomplete = () => resolve(true);
+      tx.onerror = () => resolve(false);
+    } catch (e) { resolve(false); }
+  });
+}
+
+async function idbGetProject(id) {
+  const db = await openIdb();
+  if (!db) return null;
+  return new Promise((resolve) => {
+    try {
+      const tx = db.transaction(IDB_STORE, 'readonly');
+      const req = tx.objectStore(IDB_STORE).get(id);
+      req.onsuccess = () => resolve(req.result || null);
+      req.onerror = () => resolve(null);
+    } catch (e) { resolve(null); }
+  });
+}
+
+async function idbDeleteProject(id) {
+  const db = await openIdb();
+  if (!db) return false;
+  return new Promise((resolve) => {
+    try {
+      const tx = db.transaction(IDB_STORE, 'readwrite');
+      tx.objectStore(IDB_STORE).delete(id);
+      tx.oncomplete = () => resolve(true);
+      tx.onerror = () => resolve(false);
+    } catch (e) { resolve(false); }
+  });
+}
+
+/** Migrate any localStorage projects into IndexedDB once. */
+async function migrateLocalProjectsToIdb() {
+  const db = await openIdb();
+  if (!db) return;
+  const u = curUser();
+  if (!u || !u.projects) return;
+  for (const meta of u.projects) {
+    const existing = await idbGetProject(meta.id);
+    if (existing) continue;
+    const raw = localStorage.getItem('fs-p-' + meta.id);
+    if (!raw) continue;
+    try {
+      const proj = JSON.parse(raw);
+      await idbPutProject(proj);
+    } catch (e) {}
+  }
+}
+
+async function loadProjectData(id) {
+  // Prefer IndexedDB
+  let proj = await idbGetProject(id);
+  if (proj) return proj;
+  // Fallback localStorage
+  const raw = localStorage.getItem('fs-p-' + id);
+  if (!raw) return null;
+  try {
+    proj = JSON.parse(raw);
+    // Opportunistically copy to IDB
+    idbPutProject(proj).catch(() => {});
+    return proj;
+  } catch (e) { return null; }
+}
+
+async function persistProjectData(proj) {
+  let ok = false;
+  try {
+    ok = await idbPutProject(proj);
+  } catch (e) {}
+  // Always keep a localStorage copy as safety net (may fail for very large projects)
+  try {
+    localStorage.setItem('fs-p-' + proj.id, JSON.stringify(proj));
+    ok = true;
+  } catch (e) {
+    if (!ok) throw e;
+  }
+  return ok;
+}
+
+async function removeProjectData(id) {
+  await idbDeleteProject(id);
+  try { localStorage.removeItem('fs-p-' + id); } catch (e) {}
 }
 
 /* ---------- views ---------- */
@@ -439,14 +627,14 @@ function renderHome() {
        <button data-del="${p.id}">حذف</button>
      </div>`).join('');
 }
-$('#projList').addEventListener('click', e => {
+$('#projList').addEventListener('click', async e => {
   const del = e.target.closest('[data-del]');
   if (del) {
     if (del.dataset.arm) {
       const id = del.dataset.del;
       const u = curUser();
       u.projects = u.projects.filter(p => p.id !== id);
-      try { localStorage.removeItem('fs-p-' + id); } catch (x) {}
+      await removeProjectData(id);
       writeDb();
       renderHome();
     } else {
@@ -459,55 +647,150 @@ $('#projList').addEventListener('click', e => {
   const card = e.target.closest('[data-open]');
   if (card) openProject(card.dataset.open);
 });
-$('#newProj').addEventListener('click', () => {
+$('#newProj').addEventListener('click', async () => {
   const u = curUser();
   const id = Date.now().toString(36);
   const name = 'مشروع ' + (u.projects.length + 1);
-  try { localStorage.setItem('fs-p-' + id, JSON.stringify(makeProject(id, name))); } catch (x) {}
+  const proj = makeProject(id, name);
+  try { await persistProjectData(proj); } catch (x) { alert('تعذر إنشاء المشروع — قد تكون مساحة التخزين ممتلئة'); return; }
   u.projects.push({ id, name, updated: Date.now() });
   writeDb();
   openProject(id);
 });
-function openProject(id) {
-  const raw = localStorage.getItem('fs-p-' + id);
-  if (!raw) return;
-  S = JSON.parse(raw);
-  if (!Array.isArray(S.tweens)) S.tweens = [];
-  if (!Array.isArray(S.palette)) S.palette = defaultPalette.slice();
-  if (!S.graphCurve) S.graphCurve = {x1:.25,y1:.1,x2:.25,y2:1};
+function uid() {
+  return 'o' + Date.now().toString(36) + Math.random().toString(36).slice(2, 7);
+}
+
+/** Migrate older projects: ensure every shape has a stable id, and convert index-based tweens to objectId. */
+function migrateProject(proj) {
+  if (!Array.isArray(proj.tweens)) proj.tweens = [];
+  if (!Array.isArray(proj.palette)) proj.palette = (typeof defaultPalette !== 'undefined' ? defaultPalette.slice() : []);
+  if (!proj.graphCurve) proj.graphCurve = { x1: .25, y1: .1, x2: .25, y2: 1 };
+  if (!proj.channels || typeof proj.channels !== 'object') proj.channels = {};
+  if (!Array.isArray(proj.audioClips)) proj.audioClips = [];
+  if (proj.audioVolume == null) proj.audioVolume = 0.8;
+  if (!proj.version) proj.version = 2;
+
+  (proj.layers || []).forEach((L) => {
+    if (L.locked === undefined) L.locked = false;
+    if (L.visible === undefined) L.visible = true;
+    (L.frames || []).forEach(frame => {
+      (frame || []).forEach(s => {
+        if (!s.id) s.id = uid();
+      });
+    });
+  });
+
+  // Convert legacy index-based tweens → objectId
+  proj.tweens.forEach(t => {
+    if (t.objectId) return;
+    if (typeof t.layer === 'number' && typeof t.shape === 'number') {
+      const L = proj.layers[t.layer];
+      if (L) {
+        // Use first frame that has the shape at that index as reference
+        for (let fi = 0; fi < (L.frames || []).length; fi++) {
+          const sh = L.frames[fi] && L.frames[fi][t.shape];
+          if (sh && sh.id) { t.objectId = sh.id; break; }
+        }
+      }
+      // Keep layer/shape for backward display, but prefer objectId
+    }
+    if (!t.curve) t.curve = { ...proj.graphCurve };
+  });
+  proj.version = 2.3;
+  return proj;
+}
+
+async function openProject(id) {
+  try {
+    const data = await loadProjectData(id);
+    if (!data) { alert('المشروع غير موجود'); return; }
+    S = migrateProject(data);
+  } catch (e) {
+    alert('تعذر فتح المشروع');
+    return;
+  }
   selIdx = -1; drag = null; undoS = []; redoS = [];
+  dirty = false;
   $('#projName').value = S.name;
   showView('editor');
   fit();
   refresh();
+  setSaveStatus('saved');
+  try { history.pushState({ view: 'editor', id }, ''); } catch (e) {}
 }
+
+let dirty = false;
+function setSaveStatus(state) {
+  const el = document.getElementById('saveStatus');
+  if (!el) return;
+  el.className = 'save-dot' + (state === 'dirty' ? ' dirty' : state === 'err' ? ' err' : '');
+  el.title = state === 'dirty' ? 'تغييرات غير محفوظة' : state === 'err' ? 'خطأ في الحفظ' : 'محفوظ';
+}
+
 $('#backBtn').addEventListener('click', () => {
+  // Close any open modal/sheet first
+  if (!$('#motionModal').hidden) { $('#motionModal').hidden = true; return; }
+  if (!$('#graphModal').hidden) { $('#graphModal').hidden = true; return; }
+  if (!$('#modal').hidden) { $('#modal').hidden = true; return; }
+  if (sheetOpen) { setSheet(null); return; }
   if (playing) stop();
+  if (dirty) {
+    if (!confirm('هناك تغييرات غير محفوظة. هل تريد المغادرة؟')) return;
+  }
   saveProject();
   S = null;
   goHome();
 });
+
+// Android / browser back support
+window.addEventListener('popstate', () => {
+  if ($('#editor') && !$('#editor').hidden) {
+    history.pushState({ view: 'editor' }, '');
+    $('#backBtn').click();
+  }
+});
+
 $('#projName').addEventListener('input', e => {
   if (!S) return;
   S.name = e.target.value.trim() || 'بدون اسم';
+  dirty = true; setSaveStatus('dirty');
   scheduleSave();
 });
-function saveProject() {
+async function saveProject() {
   if (!S) return;
-  try { localStorage.setItem('fs-p-' + S.id, JSON.stringify(S)); } catch (e) {}
+  try {
+    await persistProjectData(S);
+    dirty = false;
+    setSaveStatus('saved');
+  } catch (e) {
+    setSaveStatus('err');
+  }
   const u = curUser();
   const pr = u && u.projects.find(p => p.id === S.id);
   if (pr) { pr.name = S.name; pr.updated = Date.now(); writeDb(); }
 }
 let saveT = null;
-function scheduleSave() { clearTimeout(saveT); saveT = setTimeout(saveProject, 400); }
+function scheduleSave() {
+  dirty = true;
+  setSaveStatus('dirty');
+  clearTimeout(saveT);
+  saveT = setTimeout(() => { saveProject(); }, 500);
+}
 
 /* ---------- editor state ---------- */
 function mkLayer(o, name) {
-  return { name, visible: true, frames: Array.from({ length: o.frameCount }, () => []) };
+  return { name, visible: true, locked: false, frames: Array.from({ length: o.frameCount }, () => []) };
 }
 function makeProject(id, name) {
-  const o = { id, name, w: 540, h: 540, fps: 12, frameCount: 12, cur: 0, layer: 0, tool: 'brush', color: '#17171f', size: 6, onion: true, graphCurve: { x1: .25, y1: .1, x2: .25, y2: 1 }, tweens: [], palette: ['#111827','#374151','#6b7280','#d1d5db','#ffffff','#ef4444','#f97316','#f59e0b','#eab308','#84cc16','#22c55e','#10b981','#14b8a6','#06b6d4','#0ea5e9','#3b82f6','#6366f1','#8b5cf6','#a855f7','#d946ef','#ec4899','#f43f5e'], layers: [] };
+  const o = {
+    id, name, version: 2.3, w: 540, h: 540, fps: 12, frameCount: 12, cur: 0, layer: 0,
+    tool: 'brush', color: '#17171f', size: 6, onion: true,
+    graphCurve: { x1: .25, y1: .1, x2: .25, y2: 1 },
+    tweens: [], channels: {}, audioClips: [], audioVolume: 0.8,
+    palette: ['#111827','#374151','#6b7280','#d1d5db','#ffffff','#ef4444','#f97316','#f59e0b','#eab308','#84cc16','#22c55e','#10b981','#14b8a6','#06b6d4','#0ea5e9','#3b82f6','#6366f1','#8b5cf6','#a855f7','#d946ef','#ec4899','#f43f5e'],
+    layers: []
+  };
   o.layers.push(mkLayer(o, 'طبقة 1'));
   return o;
 }
@@ -537,31 +820,151 @@ window.addEventListener('resize', fit);
 /* ---------- drawing ---------- */
 function mid(a, b) { return { x: (a.x + b.x) / 2, y: (a.y + b.y) / 2 }; }
 
-function drawShape(c, s, frame=0, layerIndex=0, shapeIndex=0) {
-  const tween = (S.tweens || []).find(t => t.layer === layerIndex && t.shape === shapeIndex && frame >= t.start && frame <= t.end);
-  let tr = {x:0,y:0,rotation:0,scale:1,opacity:1};
+/* ---------- independent channel keyframes ---------- */
+const CHAN_PROPS = ['x', 'y', 'rotation', 'scaleX', 'scaleY', 'opacity'];
+function ensureChannels(objectId) {
+  if (!S.channels) S.channels = {};
+  if (!S.channels[objectId]) S.channels[objectId] = {};
+  return S.channels[objectId];
+}
+function evalChannel(keys, frame, fallback, curveDefault) {
+  if (!keys || !keys.length) return fallback;
+  const sorted = keys.slice().sort((a, b) => a.f - b.f);
+  if (frame <= sorted[0].f) return sorted[0].v;
+  if (frame >= sorted[sorted.length - 1].f) return sorted[sorted.length - 1].v;
+  let a = sorted[0], b = sorted[1];
+  for (let i = 0; i < sorted.length - 1; i++) {
+    if (frame >= sorted[i].f && frame <= sorted[i + 1].f) { a = sorted[i]; b = sorted[i + 1]; break; }
+  }
+  const span = Math.max(1, b.f - a.f);
+  const raw = clamp((frame - a.f) / span, 0, 1);
+  const p = cubicBezierProgress(raw, a.curve || curveDefault || S.graphCurve);
+  return a.v + (b.v - a.v) * p;
+}
+function transformForShape(s, frame, layerIndex, shapeIndex) {
+  let tr = { x: 0, y: 0, rotation: 0, scaleX: 1, scaleY: 1, opacity: 1 };
+  // Channel keyframes take priority when present
+  if (s.id && S.channels && S.channels[s.id]) {
+    const ch = S.channels[s.id];
+    const has = CHAN_PROPS.some(p => ch[p] && ch[p].length);
+    if (has) {
+      tr.x = evalChannel(ch.x, frame, 0);
+      tr.y = evalChannel(ch.y, frame, 0);
+      tr.rotation = evalChannel(ch.rotation, frame, 0);
+      tr.scaleX = evalChannel(ch.scaleX, frame, 1);
+      tr.scaleY = evalChannel(ch.scaleY, frame, 1);
+      tr.opacity = evalChannel(ch.opacity, frame, 1);
+      return tr;
+    }
+  }
+  // Legacy tween fallback
+  const tween = (S.tweens || []).find(t => {
+    if (frame < t.start || frame > t.end) return false;
+    if (t.objectId && s.id) return t.objectId === s.id;
+    return t.layer === layerIndex && t.shape === shapeIndex;
+  });
   if (tween) {
     const span = Math.max(1, tween.end - tween.start);
     const raw = clamp((frame - tween.start) / span, 0, 1);
     const p = cubicBezierProgress(raw, tween.curve || S.graphCurve);
-    const lerp = (a,b) => a + (b-a)*p;
-    tr = {x:lerp(tween.from.x,tween.to.x), y:lerp(tween.from.y,tween.to.y),
-      rotation:lerp(tween.from.rotation,tween.to.rotation), scale:lerp(tween.from.scale,tween.to.scale),
-      opacity:lerp(tween.from.opacity,tween.to.opacity)};
+    const lerp = (a, b) => a + (b - a) * p;
+    const fsx = tween.from.scaleX != null ? tween.from.scaleX : (tween.from.scale != null ? tween.from.scale : 1);
+    const fsy = tween.from.scaleY != null ? tween.from.scaleY : fsx;
+    const tsx = tween.to.scaleX != null ? tween.to.scaleX : (tween.to.scale != null ? tween.to.scale : 1);
+    const tsy = tween.to.scaleY != null ? tween.to.scaleY : tsx;
+    tr = {
+      x: lerp(tween.from.x, tween.to.x),
+      y: lerp(tween.from.y, tween.to.y),
+      rotation: lerp(tween.from.rotation, tween.to.rotation),
+      scaleX: lerp(fsx, tsx),
+      scaleY: lerp(fsy, tsy),
+      opacity: lerp(tween.from.opacity, tween.to.opacity)
+    };
   }
+  return tr;
+}
+function addKeyframesAtCurrent() {
+  if (!S || selIdx < 0) { $('#tweenStatus').textContent = 'حدد عنصراً أولاً.'; return; }
+  const shape = cell()[selIdx];
+  if (!shape) return;
+  if (!shape.id) shape.id = uid();
+  const ch = ensureChannels(shape.id);
+  const f = S.cur;
+  // Read current effective transform as values, or form if open
+  const cur = transformForShape(shape, f, S.layer, selIdx);
+  const form = (() => { try { return readTweenForm(); } catch (e) { return null; } })();
+  const vals = {
+    x: form ? form.from.x : cur.x,
+    y: form ? form.from.y : cur.y,
+    rotation: form ? form.from.rotation : cur.rotation,
+    scaleX: form ? form.from.scaleX : cur.scaleX,
+    scaleY: form ? form.from.scaleY : cur.scaleY,
+    opacity: form ? form.from.opacity : cur.opacity
+  };
+  // If form has different start/end and we're at end, use "to" values
+  if (form && f === form.end) {
+    vals.x = form.to.x; vals.y = form.to.y; vals.rotation = form.to.rotation;
+    vals.scaleX = form.to.scaleX; vals.scaleY = form.to.scaleY; vals.opacity = form.to.opacity;
+  }
+  CHAN_PROPS.forEach(prop => {
+    if (!ch[prop]) ch[prop] = [];
+    const existing = ch[prop].find(k => k.f === f);
+    if (existing) existing.v = vals[prop];
+    else ch[prop].push({ f, v: vals[prop], curve: { ...S.graphCurve } });
+    ch[prop].sort((a, b) => a.f - b.f);
+  });
+  $('#tweenStatus').textContent = `تم إضافة/تحديث مفاتيح على الإطار ${f + 1} لكل القنوات.`;
+  scheduleSave();
+  render();
+}
+function deleteKeyframesAtCurrent() {
+  if (!S || selIdx < 0) return;
+  const shape = cell()[selIdx];
+  if (!shape || !shape.id || !S.channels[shape.id]) return;
+  const ch = S.channels[shape.id];
+  const f = S.cur;
+  let removed = 0;
+  CHAN_PROPS.forEach(prop => {
+    if (!ch[prop]) return;
+    const before = ch[prop].length;
+    ch[prop] = ch[prop].filter(k => k.f !== f);
+    removed += before - ch[prop].length;
+  });
+  $('#tweenStatus').textContent = removed ? `حُذف ${removed} مفتاح من الإطار ${f + 1}.` : 'لا توجد مفاتيح على هذا الإطار.';
+  scheduleSave();
+  render();
+}
+
+function drawShape(c, s, frame=0, layerIndex=0, shapeIndex=0) {
+  const tr = transformForShape(s, frame, layerIndex, shapeIndex);
   const b = bbox(s), cx=b.x+b.w/2, cy=b.y+b.h/2;
   c.save();
   c.translate(cx + tr.x, cy + tr.y);
   c.rotate(tr.rotation * Math.PI / 180);
-  c.scale(tr.scale, tr.scale);
+  c.scale(tr.scaleX, tr.scaleY);
   c.translate(-cx, -cy);
   c.globalAlpha *= tr.opacity;
-  c.strokeStyle = s.color;
-  c.fillStyle = s.color;
+  c.strokeStyle = s.color || '#000';
+  c.fillStyle = s.color || '#000';
   c.lineCap = 'round';
   c.lineJoin = 'round';
-  c.lineWidth = s.size;
-  if (s.pts) {
+  c.lineWidth = s.size || 2;
+  if (s.type === 'text') {
+    const size = s.fontSize || 24;
+    c.font = `${s.fontWeight || '600'} ${size}px ${s.fontFamily || 'Tajawal, sans-serif'}`;
+    c.textAlign = s.align || 'right';
+    c.textBaseline = 'alphabetic';
+    c.globalAlpha *= (s.opacity != null ? s.opacity : 1);
+    c.fillText(s.text || '', s.x, s.y);
+  } else if (s.type === 'image') {
+    const img = getCachedImage(s.src);
+    if (img && img.complete && img.naturalWidth) {
+      c.globalAlpha *= (s.opacity != null ? s.opacity : 1);
+      c.drawImage(img, s.x, s.y, s.w || img.naturalWidth, s.h || img.naturalHeight);
+    } else if (img) {
+      img.onload = () => { if (S) render(); };
+    }
+  } else if (s.pts) {
     if (s.type === 'erase') c.globalCompositeOperation = 'destination-out';
     const p = s.pts;
     c.beginPath();
@@ -579,6 +982,16 @@ function drawShape(c, s, frame=0, layerIndex=0, shapeIndex=0) {
     c.stroke();
   }
   c.restore();
+}
+
+const imageCache = new Map();
+function getCachedImage(src) {
+  if (!src) return null;
+  if (imageCache.has(src)) return imageCache.get(src);
+  const img = new Image();
+  img.src = src;
+  imageCache.set(src, img);
+  return img;
 }
 
 function compose(shapes, alpha, target, frame=0, layerIndex=0) {
@@ -609,11 +1022,19 @@ function render() {
 
 /* ---------- geometry / hit testing ---------- */
 function bbox(s) {
+  if (s.type === 'text') {
+    const w = Math.max(40, (s.text || '').length * (s.fontSize || 24) * 0.55);
+    const h = (s.fontSize || 24) * 1.3;
+    return { x: s.x, y: s.y - h * 0.8, w, h };
+  }
+  if (s.type === 'image') {
+    return { x: s.x, y: s.y, w: s.w || 100, h: s.h || 100 };
+  }
   let xs, ys;
   if (s.pts) { xs = s.pts.map(p => p.x); ys = s.pts.map(p => p.y); }
   else { xs = [s.x1, s.x2]; ys = [s.y1, s.y2]; }
   const x0 = Math.min(...xs), x1 = Math.max(...xs), y0 = Math.min(...ys), y1 = Math.max(...ys);
-  return { x: x0, y: y0, w: x1 - x0, h: y1 - y0 };
+  return { x: x0, y: y0, w: Math.max(1, x1 - x0), h: Math.max(1, y1 - y0) };
 }
 function distSeg(px, py, ax, ay, bx, by) {
   const dx = bx - ax, dy = by - ay, L = dx * dx + dy * dy;
@@ -622,7 +1043,7 @@ function distSeg(px, py, ax, ay, bx, by) {
 }
 function hitShape(s, x, y) {
   if (s.type === 'erase') return false;
-  const tol = Math.max(10, s.size / 2 + 8);
+  const tol = Math.max(10, (s.size || 8) / 2 + 8);
   if (s.pts) {
     const p = s.pts;
     if (p.length === 1) return Math.hypot(p[0].x - x, p[0].y - y) < tol;
@@ -641,23 +1062,44 @@ function pos(e) {
 /* ---------- pointer input ---------- */
 cv.addEventListener('pointerdown', e => {
   if (!S || playing) return;
+  const curLayer = S.layers[S.layer];
+  if (curLayer && curLayer.locked && S.tool !== 'select') {
+    // Allow selection on locked layers, block drawing
+    return;
+  }
   cv.setPointerCapture(e.pointerId);
   const p = pos(e), L = cell();
   if (S.tool === 'select') {
     let idx = -1;
     for (let i = L.length - 1; i >= 0; i--) if (hitShape(L[i], p.x, p.y)) { idx = i; break; }
     selIdx = idx;
-    drag = idx >= 0 ? { mode: 'move', last: p, pushed: false } : null;
+    const locked = S.layers[S.layer] && S.layers[S.layer].locked;
+    drag = (idx >= 0 && !locked) ? { mode: 'move', last: p, pushed: false } : null;
     render();
     updateTools();
+    return;
+  }
+  if (S.tool === 'text') {
+    const txt = prompt('أدخل النص:', 'نص');
+    if (txt === null || !txt.trim()) return;
+    pushHistory();
+    const s = {
+      id: uid(), type: 'text', x: p.x, y: p.y,
+      text: txt.trim(), fontSize: Math.max(14, S.size * 3),
+      fontFamily: 'Tajawal, sans-serif', fontWeight: '700',
+      color: S.color, align: 'right', opacity: 1
+    };
+    L.push(s);
+    selIdx = L.length - 1;
+    refresh();
     return;
   }
   pushHistory();
   let s;
   if (S.tool === 'brush' || S.tool === 'erase') {
-    s = { type: S.tool === 'brush' ? 'stroke' : 'erase', pts: [p], color: S.color, size: S.size };
+    s = { id: uid(), type: S.tool === 'brush' ? 'stroke' : 'erase', pts: [p], color: S.color, size: S.size };
   } else {
-    s = { type: S.tool, x1: p.x, y1: p.y, x2: p.x, y2: p.y, color: S.color, size: S.size };
+    s = { id: uid(), type: S.tool, x1: p.x, y1: p.y, x2: p.x, y2: p.y, color: S.color, size: S.size };
   }
   L.push(s);
   selIdx = -1;
@@ -676,6 +1118,7 @@ cv.addEventListener('pointermove', e => {
     const s = cell()[selIdx];
     if (s) {
       if (s.pts) s.pts.forEach(q => { q.x += dx; q.y += dy; });
+      else if (s.type === 'text' || s.type === 'image') { s.x += dx; s.y += dy; }
       else { s.x1 += dx; s.x2 += dx; s.y1 += dy; s.y2 += dy; }
     }
     drag.last = p;
@@ -711,6 +1154,19 @@ function addLayer() {
   S.layer = S.layers.length - 1;
   refresh();
 }
+function dupLayer() {
+  if (!S) return;
+  pushHistory();
+  const src = S.layers[S.layer];
+  const copy = JSON.parse(JSON.stringify(src));
+  copy.name = src.name + ' (نسخة)';
+  copy.locked = false;
+  // New IDs for shapes so tweens stay on original
+  (copy.frames || []).forEach(fr => (fr || []).forEach(s => { s.id = uid(); }));
+  S.layers.splice(S.layer + 1, 0, copy);
+  S.layer = S.layer + 1;
+  refresh();
+}
 function delLayer() {
   if (S.layers.length <= 1) return;
   pushHistory();
@@ -718,26 +1174,68 @@ function delLayer() {
   S.layer = clamp(S.layer, 0, S.layers.length - 1);
   refresh();
 }
+function renameLayer() {
+  if (!S) return;
+  const L = S.layers[S.layer];
+  const name = prompt('اسم الطبقة:', L.name);
+  if (name === null) return;
+  const n = name.trim();
+  if (!n) return;
+  pushHistory();
+  L.name = n;
+  refresh();
+}
+function moveLayerUp() {
+  if (S.layer >= S.layers.length - 1) return;
+  pushHistory();
+  const a = S.layers[S.layer], b = S.layers[S.layer + 1];
+  S.layers[S.layer] = b; S.layers[S.layer + 1] = a;
+  S.layer++;
+  refresh();
+}
+function moveLayerDown() {
+  if (S.layer <= 0) return;
+  pushHistory();
+  const a = S.layers[S.layer], b = S.layers[S.layer - 1];
+  S.layers[S.layer] = b; S.layers[S.layer - 1] = a;
+  S.layer--;
+  refresh();
+}
 function addFrame() {
   if (S.frameCount >= 240) return;
   pushHistory();
   S.layers.forEach(L => L.frames.splice(S.cur + 1, 0, []));
   S.frameCount++; S.cur++;
+  // Shift tweens that start after current
+  (S.tweens || []).forEach(t => {
+    if (t.start > S.cur - 1) { t.start++; t.end++; }
+    else if (t.end >= S.cur - 1) t.end++;
+  });
   refresh();
 }
 function dupFrame() {
   if (S.frameCount >= 240) return;
   pushHistory();
   S.layers.forEach(L => L.frames.splice(S.cur + 1, 0, JSON.parse(JSON.stringify(L.frames[S.cur]))));
+  // New IDs on duplicated frame shapes
+  S.layers.forEach(L => {
+    const fr = L.frames[S.cur + 1];
+    if (fr) fr.forEach(s => { s.id = uid(); });
+  });
   S.frameCount++; S.cur++;
   refresh();
 }
 function delFrame() {
   if (S.frameCount <= 1) return;
   pushHistory();
+  const removed = S.cur;
   S.layers.forEach(L => L.frames.splice(S.cur, 1));
   S.frameCount--;
   S.cur = clamp(S.cur, 0, S.frameCount - 1);
+  (S.tweens || []).forEach(t => {
+    if (t.start > removed) { t.start--; t.end--; }
+    else if (t.end >= removed) t.end = Math.max(t.start, t.end - 1);
+  });
   refresh();
 }
 function clearFrame() { pushHistory(); cell().length = 0; selIdx = -1; refresh(); }
@@ -750,34 +1248,86 @@ function delSel() {
 }
 function toggleOnion() { S.onion = !S.onion; refresh(); }
 
-const acts = { addLayer, delLayer, addFrame, dupFrame, delFrame, clearFrame, delSel, toggleOnion };
+const acts = { addLayer, dupLayer, delLayer, renameLayer, moveLayerUp, moveLayerDown, addFrame, dupFrame, delFrame, clearFrame, delSel, toggleOnion };
 document.addEventListener('click', e => {
   const b = e.target.closest('[data-act]');
   if (b && S && acts[b.dataset.act] && !playing) acts[b.dataset.act]();
 });
 
 /* ---------- timeline ---------- */
+let tlZoom = 1; // 0.7 – 1.8
+function applyTlZoom() {
+  const px = Math.round(28 * tlZoom);
+  document.documentElement.style.setProperty('--tl-cell', px + 'px');
+  const lab = document.getElementById('tlZoomLabel');
+  if (lab) lab.textContent = Math.round(tlZoom * 100) + '%';
+}
 function buildTl() {
+  if (!S) return;
   const n = S.frameCount;
+  const cellW = Math.round(28 * tlZoom);
+  // Collect tween ranges per layer for visual markers
+  const tweenMap = {}; // layer -> [{start,end}]
+  (S.tweens || []).forEach(t => {
+    const li = typeof t.layer === 'number' ? t.layer : -1;
+    if (li < 0) return;
+    if (!tweenMap[li]) tweenMap[li] = [];
+    tweenMap[li].push({ start: t.start, end: t.end });
+  });
+
   let h = '<div class="row ruler"><div class="lab"></div>';
   for (let f = 0; f < n; f++) h += `<div class="cell${f === S.cur ? ' col' : ''}" data-f="${f}">${f + 1}</div>`;
   h += '</div>';
+
   for (let l = S.layers.length - 1; l >= 0; l--) {
     const L = S.layers[l];
-    h += `<div class="row"><div class="lab${l === S.layer ? ' sel' : ''}" data-l="${l}"><button class="eye" data-eye="${l}" aria-label="إظهار أو إخفاء">${L.visible ? '●' : '○'}</button><span class="name">${esc(L.name)}</span></div>`;
+    if (L.locked === undefined) L.locked = false;
+    const ranges = tweenMap[l] || [];
+    h += `<div class="row"><div class="lab${l === S.layer ? ' sel' : ''}${L.locked ? ' locked' : ''}" data-l="${l}">
+      <button class="eye" data-eye="${l}" aria-label="إظهار أو إخفاء">${L.visible ? '●' : '○'}</button>
+      <button class="lock-btn${L.locked ? ' locked' : ''}" data-lock="${l}" aria-label="قفل الطبقة">${L.locked ? '🔒' : '🔓'}</button>
+      <span class="name" data-rename="${l}" title="اضغط مرتين لإعادة التسمية">${esc(L.name)}</span>
+    </div>`;
     for (let f = 0; f < n; f++) {
       const cls = ['cell'];
       if (f === S.cur) cls.push('col');
       if (f === S.cur && l === S.layer) cls.push('cur');
-      if (L.frames[f].length) cls.push('key');
+      if (L.frames[f] && L.frames[f].length) cls.push('key');
+      let inTween = false, isStart = false, isEnd = false;
+      for (const r of ranges) {
+        if (f >= r.start && f <= r.end) {
+          inTween = true;
+          if (f === r.start) isStart = true;
+          if (f === r.end) isEnd = true;
+        }
+      }
+      if (inTween) cls.push('tween-range');
+      if (isStart) cls.push('tween-start');
+      if (isEnd) cls.push('tween-end');
       h += `<div class="${cls.join(' ')}" data-l="${l}" data-f="${f}"></div>`;
     }
     h += '</div>';
   }
   tl.innerHTML = h;
+
+  // Playhead line
+  let line = tl.querySelector('.playhead-line');
+  if (!line) {
+    line = document.createElement('div');
+    line.className = 'playhead-line';
+    tl.appendChild(line);
+  }
+  const labW = 128;
+  line.style.left = (labW + S.cur * cellW + cellW / 2) + 'px';
 }
 function paintCursor() {
+  if (!S) return;
   document.querySelectorAll('#tl [data-f]').forEach(el => el.classList.toggle('col', +el.dataset.f === S.cur));
+  const line = tl.querySelector('.playhead-line');
+  if (line) {
+    const cellW = Math.round(28 * tlZoom);
+    line.style.left = (128 + S.cur * cellW + cellW / 2) + 'px';
+  }
 }
 tl.addEventListener('click', e => {
   if (!S || playing) return;
@@ -785,6 +1335,14 @@ tl.addEventListener('click', e => {
   if (eye) {
     const l = +eye.dataset.eye;
     S.layers[l].visible = !S.layers[l].visible;
+    refresh();
+    return;
+  }
+  const lock = e.target.closest('[data-lock]');
+  if (lock) {
+    const l = +lock.dataset.lock;
+    S.layers[l].locked = !S.layers[l].locked;
+    scheduleSave();
     refresh();
     return;
   }
@@ -799,6 +1357,26 @@ tl.addEventListener('click', e => {
   }
   refresh();
 });
+// Double-click layer name to rename
+tl.addEventListener('dblclick', e => {
+  const nameEl = e.target.closest('[data-rename]');
+  if (!nameEl || !S) return;
+  const l = +nameEl.dataset.rename;
+  S.layer = l;
+  renameLayer();
+});
+// Timeline zoom
+document.getElementById('tlZoomIn')?.addEventListener('click', () => {
+  tlZoom = Math.min(1.8, Math.round((tlZoom + 0.15) * 100) / 100);
+  applyTlZoom();
+  buildTl();
+});
+document.getElementById('tlZoomOut')?.addEventListener('click', () => {
+  tlZoom = Math.max(0.65, Math.round((tlZoom - 0.15) * 100) / 100);
+  applyTlZoom();
+  buildTl();
+});
+applyTlZoom();
 
 /* ---------- playback ---------- */
 function tick() {
@@ -807,6 +1385,7 @@ function tick() {
   render();
   paintCursor();
   updateInfo();
+  syncAudioToFrame(S.cur, true);
 }
 function start() {
   clearInterval(timer);
@@ -814,11 +1393,13 @@ function start() {
   timer = setInterval(tick, 1000 / S.fps);
   render();
   updateInfo();
+  syncAudioToFrame(S.cur, true);
 }
 function stop() {
   clearInterval(timer);
   timer = null;
   playing = false;
+  stopAllAudio();
   refresh();
 }
 function togglePlay() { playing ? stop() : start(); }
@@ -855,39 +1436,104 @@ function saveImage(url, name) {
   a.click();
   a.remove();
 }
+let exportCancelled = false;
+function getExportRange() {
+  const fromEl = document.getElementById('expFrom');
+  const toEl = document.getElementById('expTo');
+  const fpsEl = document.getElementById('expFps');
+  let from = fromEl ? Math.round(+fromEl.value) - 1 : 0;
+  let to = toEl ? Math.round(+toEl.value) - 1 : S.frameCount - 1;
+  let fps = fpsEl ? Math.round(+fpsEl.value) : S.fps;
+  from = clamp(from, 0, S.frameCount - 1);
+  to = clamp(to, from, S.frameCount - 1);
+  fps = clamp(fps, 1, 60);
+  return { from, to, fps };
+}
+function showExportProgress(show, text, pct) {
+  const box = document.getElementById('exportProgress');
+  if (!box) return;
+  box.hidden = !show;
+  box.style.display = show ? 'flex' : 'none';
+  if (text) {
+    const t = document.getElementById('exportProgressText');
+    if (t) t.textContent = text;
+  }
+  if (pct != null) {
+    const fill = document.getElementById('exportBarFill');
+    if (fill) fill.style.width = Math.round(pct * 100) + '%';
+  }
+}
+document.getElementById('cancelExport')?.addEventListener('click', () => { exportCancelled = true; });
+
 document.querySelectorAll('[data-exp]').forEach(b => b.addEventListener('click', () => {
   if (!S) return;
   const kind = b.dataset.exp;
   if (kind === 'frame') saveImage(frameURL(S.cur), 'frame-' + (S.cur + 1) + '.png');
   else if (kind === 'strip') saveImage(stripURL(), 'strip.png');
+  else if (kind === 'sequence') exportPNGSequence();
   else if (kind === 'preview') { $('#shot').src = stripURL(); $('#modal').hidden = false; }
   else if (kind === 'project') exportProject();
   else if (kind === 'video') exportVideo();
   else if (kind === 'gif') exportGIF();
 }));
 function exportProject(){saveImage('data:application/json;charset=utf-8,'+encodeURIComponent(JSON.stringify(S)),(S.name||'frame-studio')+'.json');}
+
+async function exportPNGSequence() {
+  if (!S) return;
+  const { from, to } = getExportRange();
+  exportCancelled = false;
+  showExportProgress(true, 'تصدير تسلسل PNG...', 0);
+  try {
+    for (let f = from; f <= to; f++) {
+      if (exportCancelled) break;
+      saveImage(frameURL(f), (S.name || 'frame') + '-' + String(f + 1).padStart(3, '0') + '.png');
+      showExportProgress(true, `PNG ${f - from + 1}/${to - from + 1}`, (f - from + 1) / (to - from + 1));
+      await new Promise(r => setTimeout(r, 40));
+    }
+  } finally {
+    showExportProgress(false);
+  }
+}
+
 async function exportVideo(){
   if(!S)return;
   if(!window.MediaRecorder){alert('تسجيل الفيديو غير مدعوم في هذا المتصفح. جرّب Chrome حديثاً.');return;}
+  const { from, to, fps } = getExportRange();
   const out=document.createElement('canvas');out.width=S.w;out.height=S.h;const oc=out.getContext('2d');
-  const stream=out.captureStream(S.fps);
-  const candidates=['video/mp4;codecs="avc1.42E01E"','video/mp4','video/webm;codecs=vp9','video/webm'];
+  const stream=out.captureStream(fps);
+  // Try to include audio if available
+  try {
+    const actx = new (window.AudioContext || window.webkitAudioContext)();
+    const dest = actx.createMediaStreamDestination();
+    // Best-effort: no reliable decode of dataURL clips into MediaStream without more code; visual only is OK
+  } catch (e) {}
+  const candidates=['video/mp4;codecs="avc1.42E01E"','video/mp4','video/webm;codecs=vp9','video/webm;codecs=vp8','video/webm'];
   const mime=candidates.find(t=>MediaRecorder.isTypeSupported(t));
   if(!mime){alert('هذا المتصفح لا يدعم تصدير MP4 أو WebM.');return;}
   const chunks=[];const rec=new MediaRecorder(stream,{mimeType:mime,videoBitsPerSecond:6000000});
   rec.ondataavailable=e=>{if(e.data.size)chunks.push(e.data);};
   const done=new Promise(resolve=>{rec.onstop=resolve;});const old=S.cur;
+  exportCancelled = false;
+  showExportProgress(true, 'تصدير فيديو...', 0);
   try{
-    rec.start();
-    for(let f=0;f<S.frameCount;f++){renderFrame(oc,f,{onion:false});await new Promise(r=>setTimeout(r,1000/S.fps));}
+    rec.start(100);
+    const total = to - from + 1;
+    for(let i=0;i<total;i++){
+      if (exportCancelled) break;
+      const f = from + i;
+      renderFrame(oc,f,{onion:false});
+      showExportProgress(true, `فيديو ${i+1}/${total}`, (i+1)/total);
+      await new Promise(r=>setTimeout(r,1000/fps));
+    }
     rec.stop();await done;
+    if (exportCancelled) { showExportProgress(false); return; }
     const isMp4=mime.includes('mp4'),ext=isMp4?'mp4':'webm';
     const blob=new Blob(chunks,{type:mime});const url=URL.createObjectURL(blob);
     const a=document.createElement('a');a.href=url;a.download=(S.name||'animation')+'.'+ext;a.click();
     setTimeout(()=>URL.revokeObjectURL(url),30000);
-    if(!isMp4)alert('متصفح هاتفك لا يدعم MP4 عبر MediaRecorder؛ تم تصدير WebM بدلاً منه. يمكنك تحويله لاحقاً إلى MP4.');
+    if(!isMp4)alert('المتصفح لا يدعم MP4 عبر MediaRecorder؛ تم تصدير WebM. يمكنك تحويله لاحقاً إلى MP4 بأدوات خارجية.');
   }catch(e){try{rec.stop();}catch(_){}alert('تعذر تصدير الفيديو: '+e.message);}
-  finally{S.cur=old;refresh();}
+  finally{S.cur=old;refresh();showExportProgress(false);}
 }
 
 /* GIF89a encoder: indexed 3-3-2 palette + LZW, fully local/offline */
@@ -926,30 +1572,50 @@ function gifLzw(indices){
 }
 async function exportGIF(){
   if(!S)return;
-  if(S.w*S.h*S.frameCount>18000000){if(!confirm('التصدير قد يحتاج ذاكرة كبيرة. هل تريد المتابعة؟'))return;}
+  const { from, to, fps } = getExportRange();
+  const count = to - from + 1;
+  if(S.w*S.h*count>18000000){if(!confirm('التصدير قد يحتاج ذاكرة كبيرة. هل تريد المتابعة؟'))return;}
   const old=S.cur,bytes=[],push=(...v)=>bytes.push(...v),word=n=>push(n&255,(n>>8)&255);
   const ascii=t=>push(...Array.from(t).map(c=>c.charCodeAt(0)));
+  exportCancelled = false;
+  showExportProgress(true, 'تصدير GIF...', 0);
   try{
     ascii('GIF89a');word(S.w);word(S.h);push(0xF7,0,0);push(...gifPalette());
     push(0x21,0xFF,0x0B);ascii('NETSCAPE2.0');push(3,1,0,0,0);
     const canvas=document.createElement('canvas');canvas.width=S.w;canvas.height=S.h;const c=canvas.getContext('2d',{willReadFrequently:true});
-    for(let f=0;f<S.frameCount;f++){
+    for(let i=0;i<count;i++){
+      if (exportCancelled) break;
+      const f = from + i;
       renderFrame(c,f,{onion:false});const data=c.getImageData(0,0,S.w,S.h).data,idx=new Uint8Array(S.w*S.h);
-      for(let i=0,j=0;i<data.length;i+=4,j++){idx[j]=((data[i]>>5)<<5)|((data[i+1]>>5)<<2)|(data[i+2]>>6);}
-      push(0x21,0xF9,4,0);word(Math.max(2,Math.round(100/S.fps)));push(0,0);
+      for(let p=0,j=0;p<data.length;p+=4,j++){idx[j]=((data[p]>>5)<<5)|((data[p+1]>>5)<<2)|(data[p+2]>>6);}
+      push(0x21,0xF9,4,0);word(Math.max(2,Math.round(100/fps)));push(0,0);
       push(0x2C);word(0);word(0);word(S.w);word(S.h);push(0);
       push(8,...gifLzw(idx));
-      if(f%4===0){$('#tweenStatus').textContent=`جارٍ تجهيز GIF: ${f+1}/${S.frameCount}`;await new Promise(r=>setTimeout(r,0));}
+      showExportProgress(true, `GIF ${i+1}/${count}`, (i+1)/count);
+      if(i%3===0) await new Promise(r=>setTimeout(r,0));
     }
+    if (exportCancelled) { showExportProgress(false); return; }
     push(0x3B);
     const blob=new Blob([new Uint8Array(bytes)],{type:'image/gif'}),url=URL.createObjectURL(blob);
     const a=document.createElement('a');a.href=url;a.download=(S.name||'animation')+'.gif';a.click();setTimeout(()=>URL.revokeObjectURL(url),30000);
-    $('#tweenStatus').textContent='تم تصدير GIF بنجاح.';
   }catch(e){alert('تعذر تصدير GIF: '+e.message);}
-  finally{S.cur=old;refresh();}
+  finally{S.cur=old;refresh();showExportProgress(false);}
 }
 $('#importProject').addEventListener('click',()=>$('#projectFile').click());
-$('#projectFile').addEventListener('change',async e=>{const f=e.target.files[0];if(!f)return;try{const o=JSON.parse(await f.text());if(!o.layers||!Array.isArray(o.layers)||!o.frameCount)throw new Error('ملف مشروع غير صالح');if(!Array.isArray(o.tweens))o.tweens=[];const id=Date.now().toString(36);o.id=id;o.name=(o.name||'مشروع مستورد')+' - نسخة';localStorage.setItem('fs-p-'+id,JSON.stringify(o));const u=curUser();u.projects.push({id,name:o.name,updated:Date.now()});writeDb();openProject(id);}catch(err){alert('تعذر استيراد المشروع: '+err.message);}e.target.value='';});
+$('#projectFile').addEventListener('change',async e=>{
+  const f=e.target.files[0];if(!f)return;
+  try{
+    const o=JSON.parse(await f.text());
+    if(!o.layers||!Array.isArray(o.layers)||!o.frameCount)throw new Error('ملف مشروع غير صالح');
+    if(!Array.isArray(o.tweens))o.tweens=[];
+    const id=Date.now().toString(36);
+    o.id=id;o.name=(o.name||'مشروع مستورد')+' - نسخة';o.version=2.3;
+    await persistProjectData(migrateProject(o));
+    const u=curUser();u.projects.push({id,name:o.name,updated:Date.now()});writeDb();
+    openProject(id);
+  }catch(err){alert('تعذر استيراد المشروع: '+err.message);}
+  e.target.value='';
+});
 
 
 /* ---------- Tween engine and keyframe interpolation ---------- */
@@ -963,27 +1629,63 @@ function cubicBezierProgress(x, curve){
 let activeTweenId=null;
 function tweenById(){return S && S.tweens.find(t=>t.id===activeTweenId) || null;}
 function readTweenForm(){
-  const n=id=>Number($('#'+id).value);
-  return {start:clamp(Math.round(n('twStart'))-1,0,S.frameCount-1),end:clamp(Math.round(n('twEnd'))-1,0,S.frameCount-1),
-    from:{x:n('twX0'),y:n('twY0'),rotation:n('twR0'),scale:n('twS0')/100,opacity:n('twO0')/100},
-    to:{x:n('twX1'),y:n('twY1'),rotation:n('twR1'),scale:n('twS1')/100,opacity:n('twO1')/100}};
+  const n=id=>{const el=$('#'+id);return el?Number(el.value):0;};
+  const sx0 = n('twSX0') || n('twS0') || 100;
+  const sx1 = n('twSX1') || n('twS1') || 100;
+  const sy0 = n('twSY0') || sx0;
+  const sy1 = n('twSY1') || sx1;
+  return {
+    start: clamp(Math.round(n('twStart'))-1, 0, S.frameCount-1),
+    end: clamp(Math.round(n('twEnd'))-1, 0, S.frameCount-1),
+    from: {
+      x: n('twX0'), y: n('twY0'), rotation: n('twR0'),
+      scaleX: sx0/100, scaleY: sy0/100,
+      scale: sx0/100, // legacy
+      opacity: n('twO0')/100
+    },
+    to: {
+      x: n('twX1'), y: n('twY1'), rotation: n('twR1'),
+      scaleX: sx1/100, scaleY: sy1/100,
+      scale: sx1/100,
+      opacity: n('twO1')/100
+    }
+  };
 }
 function fillTweenForm(t){
   if(!t)return;
   $('#twStart').value=t.start+1;$('#twEnd').value=t.end+1;
-  $('#twX0').value=t.from.x;$('#twY0').value=t.from.y;$('#twR0').value=t.from.rotation;$('#twS0').value=Math.round(t.from.scale*100);$('#twO0').value=Math.round(t.from.opacity*100);
-  $('#twX1').value=t.to.x;$('#twY1').value=t.to.y;$('#twR1').value=t.to.rotation;$('#twS1').value=Math.round(t.to.scale*100);$('#twO1').value=Math.round(t.to.opacity*100);
+  $('#twX0').value=t.from.x;$('#twY0').value=t.from.y;$('#twR0').value=t.from.rotation;
+  $('#twX1').value=t.to.x;$('#twY1').value=t.to.y;$('#twR1').value=t.to.rotation;
+  const fsx = t.from.scaleX != null ? t.from.scaleX : (t.from.scale != null ? t.from.scale : 1);
+  const fsy = t.from.scaleY != null ? t.from.scaleY : fsx;
+  const tsx = t.to.scaleX != null ? t.to.scaleX : (t.to.scale != null ? t.to.scale : 1);
+  const tsy = t.to.scaleY != null ? t.to.scaleY : tsx;
+  if ($('#twSX0')) { $('#twSX0').value = Math.round(fsx*100); $('#twSX1').value = Math.round(tsx*100); }
+  if ($('#twSY0')) { $('#twSY0').value = Math.round(fsy*100); $('#twSY1').value = Math.round(tsy*100); }
+  // legacy fields if still present
+  if ($('#twS0')) { $('#twS0').value = Math.round(fsx*100); $('#twS1').value = Math.round(tsx*100); }
+  $('#twO0').value=Math.round(t.from.opacity*100);$('#twO1').value=Math.round(t.to.opacity*100);
 }
 function createTween(){
   if(!S || selIdx<0 || !cell()[selIdx]){ $('#tweenStatus').textContent='اختر رسماً أولاً باستخدام أداة التحديد.';return; }
+  const shape = cell()[selIdx];
+  if (!shape.id) shape.id = uid();
   const a=readTweenForm(); if(a.end<=a.start){$('#tweenStatus').textContent='يجب أن يكون الإطار الأخير بعد الإطار الأول.';return;}
-  const t={id:'tw-'+Date.now().toString(36),layer:S.layer,shape:selIdx,...a,curve:{...S.graphCurve}};
-  S.tweens.push(t);activeTweenId=t.id;$('#tweenStatus').textContent='تم إنشاء الحركة وربطها بالعنصر المحدد.';scheduleSave();render();
+  const t={id:'tw-'+Date.now().toString(36), objectId: shape.id, layer:S.layer, shape:selIdx, ...a, curve:{...S.graphCurve}};
+  S.tweens.push(t);activeTweenId=t.id;$('#tweenStatus').textContent='تم إنشاء الحركة وربطها بالعنصر (ID ثابت).';scheduleSave();render();
 }
 function updateTween(){
   const t=tweenById();if(!t){createTween();return;}
   const a=readTweenForm();if(a.end<=a.start){$('#tweenStatus').textContent='يجب أن يكون الإطار الأخير بعد الإطار الأول.';return;}
-  Object.assign(t,a);t.layer=S.layer;t.shape=selIdx>=0?selIdx:t.shape;t.curve={...S.graphCurve};
+  Object.assign(t,a);
+  if (selIdx >= 0 && cell()[selIdx]) {
+    const shape = cell()[selIdx];
+    if (!shape.id) shape.id = uid();
+    t.objectId = shape.id;
+    t.layer = S.layer;
+    t.shape = selIdx;
+  }
+  t.curve = t.curve || {...S.graphCurve};
   $('#tweenStatus').textContent='تم تحديث الحركة.';scheduleSave();render();
 }
 $('#createTween').addEventListener('click',createTween);
@@ -1040,6 +1742,10 @@ function graphAnimationLoop(){if($('#graphModal').hidden)return;drawGraph();requ
 function openGraph(){if(!S)return;graphDraft=curveNow();$('#graphModal').hidden=false;syncGraphInputs();requestAnimationFrame(()=>{graphResize();requestAnimationFrame(graphAnimationLoop);});}
 function closeGraph(save){if(save&&S){const curve={x1:graphDraft[0],y1:graphDraft[1],x2:graphDraft[2],y2:graphDraft[3]};const active=tweenById();if(active)active.curve=curve;else S.graphCurve=curve;scheduleSave();$('#graphStatus').textContent=active?'تم حفظ المنحنى للحركة المحددة.':'تم حفظ المنحنى الافتراضي للمشروع.';}$('#graphModal').hidden=true;}
 $('#openGraph').addEventListener('click',openGraph);
+document.getElementById('openGraphFromMotion')?.addEventListener('click', () => {
+  $('#motionModal').hidden = true;
+  openGraph();
+});
 $('#closeGraph').addEventListener('click',()=>closeGraph(false));
 $('#saveGraph').addEventListener('click',()=>closeGraph(true));
 $('#resetGraph').addEventListener('click',()=>setGraphCurve(curvePresets.ease));
@@ -1056,7 +1762,20 @@ function setSheet(key) {
   sheetOpen = key;
   document.querySelectorAll('[data-panel]').forEach(p => { p.hidden = p.dataset.panel !== key; });
   $('#sheet').hidden = !key;
-  if(key==='palette' && S) renderPalette();
+  if (key === 'palette' && S) renderPalette();
+  if (key === 'audio' && S) {
+    renderAudioList();
+    const vol = document.getElementById('audioVolume');
+    if (vol) vol.value = Math.round((S.audioVolume != null ? S.audioVolume : 0.8) * 100);
+  }
+  if (key === 'export' && S) {
+    const from = document.getElementById('expFrom');
+    const to = document.getElementById('expTo');
+    const fps = document.getElementById('expFps');
+    if (from) from.value = 1;
+    if (to) to.value = S.frameCount;
+    if (fps) fps.value = S.fps;
+  }
   document.querySelectorAll('[data-sheet]').forEach(b => b.classList.toggle('on', b.dataset.sheet === key));
   fit();
 }
@@ -1124,7 +1843,178 @@ $('#redo').addEventListener('click', redo);
 $('#play').addEventListener('click', togglePlay);
 $('#close').addEventListener('click', () => { $('#modal').hidden = true; });
 
+/* ---------- audio system ---------- */
+const audioPlayers = new Map(); // clipId -> HTMLAudioElement
+function stopAllAudio() {
+  audioPlayers.forEach(a => { try { a.pause(); a.currentTime = 0; } catch (e) {} });
+}
+function syncAudioToFrame(frame, play) {
+  if (!S || !S.audioClips) return;
+  const vol = S.audioVolume != null ? S.audioVolume : 0.8;
+  S.audioClips.forEach(clip => {
+    let a = audioPlayers.get(clip.id);
+    if (!a) {
+      a = new Audio(clip.src);
+      a.preload = 'auto';
+      audioPlayers.set(clip.id, a);
+    }
+    a.volume = vol * (clip.volume != null ? clip.volume : 1);
+    const start = clip.startFrame || 0;
+    const durFrames = clip.durationFrames || Math.ceil((clip.durationSec || 1) * S.fps);
+    const end = start + durFrames;
+    if (frame >= start && frame < end) {
+      const offsetSec = clip.offsetSec || 0;
+      const t = offsetSec + (frame - start) / S.fps;
+      if (play) {
+        if (Math.abs(a.currentTime - t) > 0.25) {
+          try { a.currentTime = Math.max(0, t); } catch (e) {}
+        }
+        if (a.paused) a.play().catch(() => {});
+      }
+    } else {
+      if (!a.paused) a.pause();
+    }
+  });
+}
+function renderAudioList() {
+  const list = document.getElementById('audioList');
+  if (!list || !S) return;
+  if (!S.audioClips || !S.audioClips.length) {
+    list.innerHTML = '<p class="hint">لا توجد مقاطع صوتية بعد.</p>';
+    return;
+  }
+  list.innerHTML = S.audioClips.map(c => `
+    <div class="audio-item" data-aid="${c.id}">
+      <span class="aname">${esc(c.name || 'صوت')}</span>
+      <label style="font-size:11px;color:var(--muted)">إطار بداية
+        <input type="number" min="1" value="${(c.startFrame || 0) + 1}" data-astart="${c.id}">
+      </label>
+      <button data-adel="${c.id}">حذف</button>
+    </div>`).join('');
+}
+document.getElementById('importAudioBtn')?.addEventListener('click', () => document.getElementById('audioFile')?.click());
+document.getElementById('audioFile')?.addEventListener('change', async e => {
+  const file = e.target.files && e.target.files[0];
+  e.target.value = '';
+  if (!file || !S) return;
+  try {
+    const dataUrl = await new Promise((res, rej) => {
+      const r = new FileReader();
+      r.onload = () => res(r.result);
+      r.onerror = rej;
+      r.readAsDataURL(file);
+    });
+    const a = new Audio(dataUrl);
+    await new Promise(r => { a.onloadedmetadata = r; a.onerror = r; setTimeout(r, 2000); });
+    const durationSec = isFinite(a.duration) ? a.duration : 3;
+    if (!S.audioClips) S.audioClips = [];
+    const clip = {
+      id: 'au-' + Date.now().toString(36),
+      name: file.name || 'صوت',
+      src: dataUrl,
+      startFrame: S.cur,
+      durationSec,
+      durationFrames: Math.max(1, Math.ceil(durationSec * S.fps)),
+      offsetSec: 0,
+      volume: 1
+    };
+    S.audioClips.push(clip);
+    audioPlayers.set(clip.id, a);
+    renderAudioList();
+    scheduleSave();
+    $('#tweenStatus') && ($('#tweenStatus').textContent = 'تمت إضافة مقطع صوتي.');
+  } catch (err) {
+    alert('تعذر استيراد الصوت');
+  }
+});
+document.getElementById('audioList')?.addEventListener('click', e => {
+  const del = e.target.closest('[data-adel]');
+  if (del && S) {
+    const id = del.dataset.adel;
+    S.audioClips = (S.audioClips || []).filter(c => c.id !== id);
+    const a = audioPlayers.get(id);
+    if (a) { a.pause(); audioPlayers.delete(id); }
+    renderAudioList();
+    scheduleSave();
+  }
+});
+document.getElementById('audioList')?.addEventListener('change', e => {
+  const inp = e.target.closest('[data-astart]');
+  if (!inp || !S) return;
+  const clip = (S.audioClips || []).find(c => c.id === inp.dataset.astart);
+  if (!clip) return;
+  clip.startFrame = clamp(Math.round(+inp.value) - 1, 0, S.frameCount - 1);
+  scheduleSave();
+});
+document.getElementById('audioVolume')?.addEventListener('input', e => {
+  if (!S) return;
+  S.audioVolume = (+e.target.value) / 100;
+  audioPlayers.forEach(a => { a.volume = S.audioVolume; });
+  scheduleSave();
+});
+
+// Wire keyframe buttons
+document.getElementById('addKeyframeBtn')?.addEventListener('click', addKeyframesAtCurrent);
+document.getElementById('delKeyframeBtn')?.addEventListener('click', deleteKeyframesAtCurrent);
+
+/* ---------- image import ---------- */
+document.getElementById('importImageBtn')?.addEventListener('click', () => {
+  if (!S) return;
+  if (S.layers[S.layer]?.locked) { alert('الطبقة مقفلة'); return; }
+  document.getElementById('imageFile')?.click();
+});
+document.getElementById('imageFile')?.addEventListener('change', async (e) => {
+  const file = e.target.files && e.target.files[0];
+  e.target.value = '';
+  if (!file || !S) return;
+  if (!file.type.startsWith('image/')) { alert('اختر ملف صورة'); return; }
+  try {
+    const dataUrl = await new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onload = () => resolve(reader.result);
+      reader.onerror = reject;
+      reader.readAsDataURL(file);
+    });
+    const img = await new Promise((resolve, reject) => {
+      const i = new Image();
+      i.onload = () => resolve(i);
+      i.onerror = reject;
+      i.src = dataUrl;
+    });
+    // Fit image reasonably into canvas
+    const maxSide = Math.min(S.w, S.h) * 0.55;
+    let w = img.naturalWidth, h = img.naturalHeight;
+    const scale = Math.min(1, maxSide / Math.max(w, h));
+    w = Math.round(w * scale); h = Math.round(h * scale);
+    pushHistory();
+    const s = {
+      id: uid(), type: 'image',
+      x: Math.round((S.w - w) / 2), y: Math.round((S.h - h) / 2),
+      w, h, src: dataUrl, opacity: 1
+    };
+    imageCache.set(dataUrl, img);
+    cell().push(s);
+    selIdx = cell().length - 1;
+    S.tool = 'select';
+    refresh();
+  } catch (err) {
+    alert('تعذر استيراد الصورة');
+  }
+});
+
+/* ---------- satisfying press animation on every interactive button ---------- */
+document.addEventListener('pointerdown', e => {
+  const btn = e.target.closest('button');
+  if (!btn || btn.disabled) return;
+  btn.classList.remove('press-pulse');
+  void btn.offsetWidth;
+  btn.classList.add('press-pulse');
+  setTimeout(() => btn.classList.remove('press-pulse'), 300);
+}, { passive: true });
+
 /* ---------- start: splash, then login or projects ---------- */
+openIdb().then(() => migrateLocalProjectsToIdb()).catch(() => {});
+
 setTimeout(() => {
   $('#splash').classList.add('out');
   setTimeout(() => {
