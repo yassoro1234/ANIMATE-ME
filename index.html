@@ -1,3 +1,4 @@
+<meta charset="utf-8">
 <title>Frame Studio 2.3</title>
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
 <meta name="theme-color" content="#0d0d11">
@@ -186,7 +187,23 @@ canvas{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);backgro
 .audio-item input[type=number]{width:64px;background:var(--bg);border:1px solid var(--line);border-radius:8px;color:var(--fg);padding:6px}
 @media(max-width:380px){.tool-grid{grid-template-columns:repeat(3,minmax(0,1fr));gap:6px}.tool-tile{font-size:11px!important;min-height:68px!important}.palette-grid{grid-template-columns:repeat(7,minmax(0,1fr))}}
 
-.settings-modal{position:fixed;inset:0;z-index:80;background:rgba(0,0,0,.68);display:flex;align-items:center;justify-content:center;padding:18px;box-sizing:border-box}.settings-card{width:min(420px,100%);background:var(--panel);border:1px solid var(--line);border-radius:20px;padding:18px;display:flex;flex-direction:column;gap:14px;box-shadow:0 20px 60px #0008}.settings-head{display:flex;align-items:center;justify-content:space-between;font-size:18px}.settings-label{color:var(--muted)}.settings-card select{width:100%;padding:12px;border-radius:10px;background:var(--panel2);color:var(--fg);border:1px solid var(--line);font:inherit}#tl .playhead-line{display:none!important}#tl [data-f].col{background:rgba(255,122,61,.10)!important;box-shadow:inset 0 -2px var(--accent)}</style>
+.settings-modal{position:fixed;inset:0;z-index:80;background:rgba(0,0,0,.68);display:flex;align-items:center;justify-content:center;padding:18px;box-sizing:border-box}.settings-card{width:min(420px,100%);background:var(--panel);border:1px solid var(--line);border-radius:20px;padding:18px;display:flex;flex-direction:column;gap:14px;box-shadow:0 20px 60px #0008}.settings-head{display:flex;align-items:center;justify-content:space-between;font-size:18px}.settings-label{color:var(--muted)}.settings-card select{width:100%;padding:12px;border-radius:10px;background:var(--panel2);color:var(--fg);border:1px solid var(--line);font:inherit}#tl .playhead-line{display:none!important}#tl [data-f].col{background:rgba(255,122,61,.10)!important;box-shadow:inset 0 -2px var(--accent)}
+.img-chips{display:flex;gap:8px;overflow-x:auto;padding-bottom:6px;width:100%}
+.img-chip{display:flex;flex-direction:column;align-items:center;gap:4px;min-width:72px;padding:6px;border-radius:10px;background:var(--panel2);border:1px solid var(--line);color:var(--fg);font-size:12px}
+.img-chip.on{border-color:var(--accent)}
+.img-chip img{width:56px;height:56px;object-fit:cover;border-radius:6px;background:var(--bg)}
+.img-track{display:flex;gap:3px;overflow-x:auto;padding:4px 0;width:100%}
+.img-cell{min-width:30px;height:30px;border-radius:6px;background:var(--panel2);border:1px solid var(--line);color:var(--muted);font-size:11px}
+.img-cell.cur{border-color:var(--accent);color:var(--fg)}
+.img-cell.key{background:var(--accent);color:var(--accent-ink)}
+.img-ctl{display:grid;grid-template-columns:96px 1fr 46px;align-items:center;gap:8px;color:var(--muted);font-size:12px;width:100%}
+.img-ctl input{accent-color:var(--accent)}
+.img-actions{display:flex;flex-wrap:wrap;gap:8px;width:100%}
+.img-actions button.danger{color:#ff6b6b}
+#imgPanel{width:100%;max-height:38vh;overflow-y:auto;padding-bottom:6px;display:flex;flex-direction:column;gap:6px}
+.img-actions{order:-1}
+.img-chip img{width:44px;height:44px}
+</style>
 
 <!-- Splash -->
 <div id="splash">
@@ -277,7 +294,7 @@ canvas{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);backgro
       <button data-tool="brush">فرشاة</button>
       <button data-tool="erase">ممحاة</button>
       <button data-tool="text">نص</button>
-      <button id="importImageBtn">استيراد صورة</button><span class="hint">بعد الاستيراد حدّد الصورة ثم أضف مفاتيح الحركة واستعمل Graph Editor لتنعيم الحركة.</span>
+      <button id="importImageBtn">استيراد صورة</button><span class="hint">بعد الاستيراد تجد الصورة في لوحة «صور» لتحريكها بالمفاتيح</span>
       <input type="color" id="color" aria-label="اللون">
       <input type="range" id="size" min="1" max="60" aria-label="الحجم">
       <button id="delsel" data-act="delSel" disabled>حذف المحدد</button>
@@ -308,6 +325,7 @@ canvas{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);backgro
       <button data-act="delFrame">حذف الإطار</button>
       <button id="onion" data-act="toggleOnion">قشرة الإطار السابق</button>
     </div>
+    <div class="panel" data-panel="images" hidden><div id="imgPanel"></div></div>
     <div class="panel" data-panel="motion" hidden>
       <div class="tool-grid">
         <button class="tool-tile primary" id="openMotion"><svg class="i" viewBox="0 0 24 24"><path d="M4 19V5m0 14h16M7 15l4-5 3 3 6-8"/></svg><span>خصائص الحركة</span></button>
@@ -361,6 +379,7 @@ canvas{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);backgro
   <nav class="dock">
     <button data-sheet="draw" aria-label="رسم"><svg class="i" viewBox="0 0 24 24"><path d="M4 20l4-1 11-11-3-3L5 16z"/></svg><span>رسم</span></button>
     <button data-sheet="shapes" aria-label="أشكال"><svg class="i" viewBox="0 0 24 24"><rect x="3" y="5" width="11" height="11" rx="2"/><circle cx="16" cy="15" r="5"/></svg><span>أشكال</span></button>
+    <button data-sheet="images" aria-label="صور"><svg class="i" viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="16" rx="2"/><circle cx="9" cy="10" r="2"/><path d="M21 16l-5-5-8 8"/></svg><span>صور</span></button>
     <button data-sheet="layers" aria-label="طبقات"><svg class="i" viewBox="0 0 24 24"><path d="M12 3l9 5-9 5-9-5z"/><path d="M3 13l9 5 9-5"/></svg><span>طبقات</span></button>
     <button data-sheet="frames" aria-label="إطارات"><svg class="i" viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="16" rx="2"/><path d="M3 10h18M9 4v16"/></svg><span>إطارات</span></button>
     <button data-sheet="palette" aria-label="لوحة الألوان"><svg class="i" viewBox="0 0 24 24"><path d="M12 3a9 9 0 100 18h2a2 2 0 002-2 2 2 0 00-1-1.7 1.5 1.5 0 011-2.8H18a3 3 0 003-3 9 9 0 00-9-8.5z"/><circle cx="7.5" cy="10" r="1"/><circle cx="11" cy="7" r="1"/><circle cx="16" cy="8" r="1"/></svg><span>ألوان</span></button>
@@ -933,6 +952,7 @@ function addKeyframesAtCurrent() {
     else ch[prop].push({ f, v: vals[prop], curve: { ...S.graphCurve } });
     ch[prop].sort((a, b) => a.f - b.f);
   });
+  syncObjectPresence(shape.id, f);
   $('#tweenStatus').textContent = `تم إضافة/تحديث مفاتيح على الإطار ${f + 1} لكل القنوات.`;
   scheduleSave();
   render();
@@ -977,7 +997,7 @@ function drawShape(c, s, frame=0, layerIndex=0, shapeIndex=0) {
     c.globalAlpha *= (s.opacity != null ? s.opacity : 1);
     c.fillText(s.text || '', s.x, s.y);
   } else if (s.type === 'image') {
-    const img = getCachedImage(s.src);
+    const img = getCachedImage(s.src || (S.images && S.images[s.id]));
     if (img && img.complete && img.naturalWidth) {
       c.globalAlpha *= (s.opacity != null ? s.opacity : 1);
       c.drawImage(img, s.x, s.y, s.w || img.naturalWidth, s.h || img.naturalHeight);
@@ -1845,6 +1865,7 @@ function setSheet(key) {
   document.querySelectorAll('[data-panel]').forEach(p => { p.hidden = p.dataset.panel !== key; });
   $('#sheet').hidden = !key;
   if (key === 'palette' && S) renderPalette();
+  if (key === 'images' && S) renderImagesPanel();
   if (key === 'audio' && S) {
     renderAudioList();
     const vol = document.getElementById('audioVolume');
@@ -1900,6 +1921,7 @@ function updateInfo() {
 function refresh() {
   buildTl();
   if(S && sheetOpen==='palette') renderPalette();
+  if(S && sheetOpen==='images') renderImagesPanel();
   render();
   updateInfo();
   updateTools();
@@ -2039,6 +2061,164 @@ document.getElementById('audioVolume')?.addEventListener('input', e => {
 document.getElementById('addKeyframeBtn')?.addEventListener('click', addKeyframesAtCurrent);
 document.getElementById('delKeyframeBtn')?.addEventListener('click', deleteKeyframesAtCurrent);
 
+
+/* ---------- image objects: presence across frames and their own panel ---------- */
+function T(ar, en) { return (localStorage.getItem(LANG_KEY) || 'ar') === 'ar' ? ar : en; }
+let imgSelId = null;
+function findObject(id) {
+  if (!S || !id) return null;
+  for (let l = 0; l < S.layers.length; l++) {
+    const frames = S.layers[l].frames;
+    for (let f = 0; f < frames.length; f++) {
+      const idx = frames[f].findIndex(s => s.id === id);
+      if (idx >= 0) return { layer: l, frame: f, shape: frames[f][idx] };
+    }
+  }
+  return null;
+}
+function hasChannelKeys(id) {
+  const ch = S.channels && S.channels[id];
+  return !!ch && CHAN_PROPS.some(p => ch[p] && ch[p].length);
+}
+function setKeyAt(ch, prop, f, v) {
+  if (!ch[prop]) ch[prop] = [];
+  const k = ch[prop].find(k => k.f === f);
+  if (k) k.v = v; else ch[prop].push({ f, v, curve: { ...S.graphCurve } });
+  ch[prop].sort((a, b) => a.f - b.f);
+}
+// Keys every channel of an object at one frame, using its current transform there.
+function keyAllPropsAt(id, f) {
+  const found = findObject(id);
+  if (!found) return;
+  const tr = transformForShape(found.shape, f, found.layer, -1);
+  const ch = ensureChannels(id);
+  CHAN_PROPS.forEach(p => setKeyAt(ch, p, f, tr[p]));
+}
+// Keeps an object on every frame from its first frame (or first keyframe, or the requested frame) to the end.
+// Copies carry no pixels; they read them from S.images, so the project stores each image once.
+function syncObjectPresence(id, fromFrame) {
+  const found = findObject(id);
+  if (!found) return;
+  const L = S.layers[found.layer];
+  const keys = (S.channels && S.channels[id]) || {};
+  let start = found.frame;
+  if (fromFrame != null) start = Math.min(start, fromFrame);
+  CHAN_PROPS.forEach(p => (keys[p] || []).forEach(k => { start = Math.min(start, k.f); }));
+  for (let f = Math.max(0, start); f < S.frameCount; f++) {
+    if (!L.frames[f].some(s => s.id === id)) {
+      const copy = { ...found.shape };
+      delete copy.src;
+      L.frames[f].push(JSON.parse(JSON.stringify(copy)));
+    }
+  }
+}
+function imageObjects() {
+  if (!S) return [];
+  const seen = new Map();
+  S.layers.forEach((L, li) => L.frames.forEach(fr => fr.forEach(s => {
+    if (s.type === 'image' && s.id && !seen.has(s.id)) seen.set(s.id, { id: s.id, layer: li });
+  })));
+  return [...seen.values()];
+}
+function imgControlDefs() {
+  return [
+    { label: 'X', chans: ['x'], min: -S.w, max: S.w * 2, step: 1, read: t => t.x, write: v => v },
+    { label: 'Y', chans: ['y'], min: -S.h, max: S.h * 2, step: 1, read: t => t.y, write: v => v },
+    { label: T('الدوران °', 'Rotation °'), chans: ['rotation'], min: -180, max: 180, step: 1, read: t => t.rotation, write: v => v },
+    { label: T('الحجم %', 'Scale %'), chans: ['scaleX', 'scaleY'], min: 10, max: 300, step: 1, read: t => t.scaleX * 100, write: v => v / 100 },
+    { label: T('الشفافية %', 'Opacity %'), chans: ['opacity'], min: 0, max: 100, step: 1, read: t => t.opacity * 100, write: v => v / 100 },
+  ];
+}
+function selectImageObject(id) {
+  if (!S) return;
+  imgSelId = id;
+  syncObjectPresence(id, S.cur);
+  const found = findObject(id);
+  if (!found) return;
+  S.layer = found.layer;
+  S.tool = 'select';
+  selIdx = cell().findIndex(s => s.id === id);
+  refresh();
+}
+function deleteImageObject(id) {
+  if (!S || !id) return;
+  if (!confirm(T('حذف هذه الصورة من كل الإطارات؟', 'Delete this image from all frames?'))) return;
+  pushHistory();
+  S.layers.forEach(L => L.frames.forEach(fr => { for (let i = fr.length - 1; i >= 0; i--) if (fr[i].id === id) fr.splice(i, 1); }));
+  if (S.channels) delete S.channels[id];
+  if (S.images) delete S.images[id];
+  imgSelId = null;
+  selIdx = -1;
+  refresh();
+}
+function renderImagesPanel() {
+  const box = document.getElementById('imgPanel');
+  if (!box || !S) return;
+  const objs = imageObjects();
+  if (!objs.length) {
+    box.innerHTML = `<p class="hint">${T('لا توجد صور بعد. اضغط «استيراد صورة».', 'No images yet. Tap “Import image”.')}</p>
+      <button class="primary big" data-img-import>${T('+ استيراد صورة', '+ Import image')}</button>`;
+    return;
+  }
+  if (!objs.some(o => o.id === imgSelId)) imgSelId = objs[0].id;
+  const found = findObject(imgSelId);
+  const keys = (S.channels && S.channels[imgSelId]) || {};
+  const keyFrames = new Set();
+  CHAN_PROPS.forEach(p => (keys[p] || []).forEach(k => keyFrames.add(k.f)));
+  let h = '<div class="img-chips">';
+  objs.forEach((o, i) => {
+    const src = (S.images && S.images[o.id]) || '';
+    h += `<button class="img-chip${o.id === imgSelId ? ' on' : ''}" data-img="${o.id}"><img src="${src}" alt=""><span>${T('صورة', 'Image')} ${i + 1}</span></button>`;
+  });
+  h += '</div><div class="img-track">';
+  for (let f = 0; f < S.frameCount; f++) {
+    h += `<button class="img-cell${f === S.cur ? ' cur' : ''}${keyFrames.has(f) ? ' key' : ''}" data-imgf="${f}">${f + 1}</button>`;
+  }
+  h += '</div>';
+  if (found) {
+    const tr = transformForShape(found.shape, S.cur, found.layer, -1);
+    imgControlDefs().forEach((d, i) => {
+      const v = d.read(tr);
+      h += `<label class="img-ctl"><span>${d.label}</span><input type="range" min="${d.min}" max="${d.max}" step="${d.step}" value="${v}" data-imgctl="${i}"><output>${Math.round(v)}</output></label>`;
+    });
+  }
+  h += `<div class="img-actions">
+      <button data-img-key>${T('مفتاح هنا', 'Keyframe here')}</button>
+      <button data-img-delkey>${T('حذف مفتاح', 'Delete keyframe')}</button>
+      <button class="danger" data-img-delete>${T('حذف الصورة', 'Delete image')}</button>
+    </div>
+    <p class="hint">${T('كل تعديل بالشريط ينشئ مفتاحاً على الإطار الحالي.', 'Each slider change creates a keyframe on the current frame.')}</p>`;
+  box.innerHTML = h;
+}
+document.getElementById('imgPanel')?.addEventListener('click', (e) => {
+  if (!S) return;
+  const t = e.target;
+  if (t.closest('[data-img-import]')) { document.getElementById('importImageBtn')?.click(); return; }
+  const chip = t.closest('[data-img]');
+  if (chip) { selectImageObject(chip.dataset.img); return; }
+  const cellBtn = t.closest('[data-imgf]');
+  if (cellBtn) { S.cur = +cellBtn.dataset.imgf; selIdx = cell().findIndex(s => s.id === imgSelId); refresh(); return; }
+  if (t.closest('[data-img-key]') && imgSelId) { selectImageObject(imgSelId); addKeyframesAtCurrent(); return; }
+  if (t.closest('[data-img-delkey]') && imgSelId) { selectImageObject(imgSelId); deleteKeyframesAtCurrent(); return; }
+  if (t.closest('[data-img-delete]')) { deleteImageObject(imgSelId); }
+});
+document.getElementById('imgPanel')?.addEventListener('input', (e) => {
+  const inp = e.target.closest('[data-imgctl]');
+  if (!inp || !S || !imgSelId) return;
+  const found = findObject(imgSelId);
+  if (!found) return;
+  const d = imgControlDefs()[+inp.dataset.imgctl];
+  if (!hasChannelKeys(imgSelId)) keyAllPropsAt(imgSelId, found.frame);
+  syncObjectPresence(imgSelId, S.cur);
+  const ch = ensureChannels(imgSelId);
+  const v = +inp.value;
+  d.chans.forEach(c => setKeyAt(ch, c, S.cur, d.write(v)));
+  const out = inp.parentElement.querySelector('output');
+  if (out) out.textContent = Math.round(v);
+  selIdx = cell().findIndex(s => s.id === imgSelId);
+  buildTl(); render(); scheduleSave();
+});
+
 /* ---------- image import ---------- */
 document.getElementById('importImageBtn')?.addEventListener('click', () => {
   if (!S) return;
@@ -2072,11 +2252,15 @@ document.getElementById('imageFile')?.addEventListener('change', async (e) => {
     const s = {
       id: uid(), type: 'image',
       x: Math.round((S.w - w) / 2), y: Math.round((S.h - h) / 2),
-      w, h, src: dataUrl, opacity: 1
+      w, h, opacity: 1
     };
+    S.images = S.images || {};
+    S.images[s.id] = dataUrl;
     imageCache.set(dataUrl, img);
     cell().push(s);
-    selIdx = cell().length - 1;
+    syncObjectPresence(s.id, S.cur);
+    imgSelId = s.id;
+    selIdx = cell().findIndex(o => o.id === s.id);
     S.tool = 'select';
     refresh();
   } catch (err) {
